@@ -11,17 +11,27 @@ class WorldSession;
 
 #include "ItemTemplate.h"
 #include "AuctionatorConfig.h"
+#include "AuctionHouseMgr.h"
 
 class Auctionator
 {
     private:
         Auctionator();
-        AuctionatorConfig *config;
+        AuctionHouseObject* HordeAh;
+        AuctionHouseObject* AllianceAh;
+        AuctionHouseObject* NeutralAh;
+        AuctionHouseEntry const* HordeAhEntry;
+        AuctionHouseEntry const* AllianceAhEntry;
+        AuctionHouseEntry const* NeutralAhEntry;
+        WorldSession *session;
+        Player *AhPlayer;
+        void logInfo(std::string message);
 
     public:
         ~Auctionator();
-        void CreateAuction();
+        void CreateAuction(uint32 itemId);
         void InitializeConfig();
+        AuctionatorConfig *config;
 
         static Auctionator *getInstance()
         {

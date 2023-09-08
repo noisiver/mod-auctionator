@@ -12,18 +12,14 @@ public:
 
     void OnStartup() override
     {
-        LOG_INFO("server.loading", "Auctionator initializing...");
-        if (sConfigMgr->GetOption<bool>("Auctionator.Enabled", true, true)) {
-            LOG_INFO("server.loading", "Auctionator disabled.");
+        LOG_INFO("server.loading", "[Auctionator]: Auctionator initializing...");
+        if (gAuctionator->config->isEnabled) {
+            LOG_INFO("server.loading", "[Auctionator]: Auctionator enabled.");
         } else {
-            LOG_INFO("server.loading", "Auctionator enabled.");
+            LOG_INFO("server.loading", "[Auctionator]: Auctionator disabled.");
         }
 
-        gAuctionator->InitializeConfig();
-
-        LOG_INFO("server.loading", "Adding item");
-        gAuctionator->CreateAuction();
-        LOG_INFO("server.loading", "Item added");
+        gAuctionator->CreateAuction(40896);
     }
 };
 

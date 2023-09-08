@@ -11,7 +11,8 @@ class AuctionatorConfig
     public:
         AuctionatorConfig();
         bool isEnabled;
-        uint32 playerId;
+        uint32 characterId;
+        uint32 characterGuid;
         uint32 auctionHouseId;
         uint32 internalHouseId;
 
