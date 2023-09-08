@@ -1,1 +1,1 @@
-# mod-auctionhouse-automater
+# mod-auctionator
