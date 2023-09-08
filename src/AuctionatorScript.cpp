@@ -4,11 +4,12 @@
 #include "Config.h"
 #include "Chat.h"
 #include "Auctionator.h"
+#include "Player.h"
 
-class AuctionatorScript : public WorldScript
+class AuctionatorWorldScript : public WorldScript
 {
 public:
-    AuctionatorScript() : WorldScript("Auctionator_WorldScript") { }
+    AuctionatorWorldScript() : WorldScript("Auctionator_WorldScript") { }
 
     void OnStartup() override
     {
@@ -19,11 +20,90 @@ public:
             LOG_INFO("server.loading", "[Auctionator]: Auctionator disabled.");
         }
 
-        gAuctionator->CreateAuction(40896);
+        // AuctionatorItem testItem;
+        // testItem.houseId = AUCTIONHOUSE_HORDE;
+        // testItem.itemId = 40896;
+        // testItem.buyout = 5000;
+
+        // gAuctionator->CreateAuction(testItem);
     }
+};
+
+class AuctionatorHouseScript : public AuctionHouseScript
+{
+    public:
+        AuctionatorHouseScript() : AuctionHouseScript("AuctionatorHouseScript") {}
+
+        void OnBeforeAuctionHouseMgrSendAuctionSuccessfulMail(
+                AuctionHouseMgr* /*auctionHouseMgr*/,
+                AuctionEntry* /*auction*/,
+                Player* owner,
+                uint32& /*owner_accId*/,
+                uint32& /*profit*/,
+                bool& sendNotification,
+                bool& updateAchievementCriteria,
+                bool& /*sendMail*/
+            ) override
+        {
+            if (owner && owner->GetGUID().GetCounter() == gAuctionator->config->characterGuid)
+            {
+                sendNotification = false;
+                updateAchievementCriteria = false;
+            }
+        }
+
+        void OnBeforeAuctionHouseMgrSendAuctionExpiredMail(
+                AuctionHouseMgr* /*auctionHouseMgr*/,
+                AuctionEntry* /*auction*/,
+                Player* owner,
+                uint32& /*owner_accId*/,
+                bool& sendNotification,
+                bool& /*sendMail*/
+            ) override
+        {
+            if (owner && owner->GetGUID().GetCounter() == gAuctionator->config->characterGuid)
+                sendNotification = false;
+        }
+
+        void OnBeforeAuctionHouseMgrSendAuctionOutbiddedMail(
+                AuctionHouseMgr* /*auctionHouseMgr*/,
+                AuctionEntry* auction,
+                Player* oldBidder,
+                uint32& /*oldBidder_accId*/,
+                Player* newBidder,
+                uint32& newPrice,
+                bool& /*sendNotification*/,
+                bool& /*sendMail*/
+            ) override
+        {
+            if (oldBidder && !newBidder)
+                oldBidder->GetSession()->SendAuctionBidderNotification(
+                    auction->GetHouseId(),
+                    auction->Id,
+                    ObjectGuid::Create<HighGuid::Player>(gAuctionator->config->characterGuid),
+                    newPrice,
+                    auction->GetAuctionOutBid(),
+                    auction->item_template);
+        }
+
+        // void OnAuctionAdd(AuctionHouseObject* /*ah*/, AuctionEntry* auction) override
+        // {
+        //     auctionbot->IncrementItemCounts(auction);
+        // }
+
+        // void OnAuctionRemove(AuctionHouseObject* /*ah*/, AuctionEntry* auction) override
+        // {
+        //     auctionbot->DecrementItemCounts(auction, auction->item_template);
+        // }
+
+        void OnBeforeAuctionHouseMgrUpdate() override
+        {
+            gAuctionator->Update();
+        }
 };
 
 void AddAuctionatorScripts()
 {
-    new AuctionatorScript();
-}
+    new AuctionatorWorldScript();
+    new AuctionatorHouseScript();
+};

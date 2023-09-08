@@ -13,6 +13,23 @@ class WorldSession;
 #include "AuctionatorConfig.h"
 #include "AuctionHouseMgr.h"
 
+struct AuctionatorItem
+{
+    uint32 itemId;
+    uint32 houseId;
+    uint32 bid;
+    uint32 buyout;
+    uint32 time;
+    uint32 quantity; 
+
+    AuctionatorItem() :
+        itemId(0),
+        houseId(AUCTIONHOUSE_NEUTRAL),
+        bid(0),
+        buyout(0),
+        time(172800),
+        quantity(1) {}
+};
 class Auctionator
 {
     private:
@@ -24,14 +41,15 @@ class Auctionator
         AuctionHouseEntry const* AllianceAhEntry;
         AuctionHouseEntry const* NeutralAhEntry;
         WorldSession *session;
-        Player *AhPlayer;
-        void logInfo(std::string message);
 
     public:
         ~Auctionator();
-        void CreateAuction(uint32 itemId);
+        void CreateAuction(AuctionatorItem newItem);
+        void Initialize();
         void InitializeConfig();
         AuctionatorConfig *config;
+        void logInfo(std::string message);
+        void Update();
 
         static Auctionator *getInstance()
         {

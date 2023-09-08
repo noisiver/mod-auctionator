@@ -13,12 +13,13 @@
 Auctionator::Auctionator()
 {
     InitializeConfig();
+    Initialize();
 };
 
 Auctionator::~Auctionator()
 {}
 
-void Auctionator::CreateAuction(uint32 itemId)
+void Auctionator::CreateAuction(AuctionatorItem newItem)
 {
     //int32 itemId = 40896; // glyph of frenzied regeneration
 
@@ -30,13 +31,13 @@ void Auctionator::CreateAuction(uint32 itemId)
     player.Initialize(config->characterGuid);
     ObjectAccessor::AddObject(&player);
 
-    logInfo("Creating Auction for item: " + std::to_string(itemId));
+    logInfo("Creating Auction for item: " + std::to_string(newItem.itemId));
     // Create the item (and add it to the update queue for the player ")
-    Item* item = Item::CreateItem(itemId, 1, &player);
+    Item* item = Item::CreateItem(newItem.itemId, 1, &player);
 
     logInfo("adding item to player queue");
     item->AddToUpdateQueueOf(&player);
-    uint32 randomPropertyId = Item::GenerateItemRandomPropertyId(itemId);
+    uint32 randomPropertyId = Item::GenerateItemRandomPropertyId(newItem.itemId);
     if (randomPropertyId != 0) {
         logInfo("adding random properties");
         item->SetItemRandomProperties(randomPropertyId);
@@ -51,13 +52,13 @@ void Auctionator::CreateAuction(uint32 itemId)
     auctionEntry->houseId = AUCTIONHOUSE_HORDE;
     auctionEntry->item_guid = item->GetGUID();
     auctionEntry->item_template = item->GetEntry();
-    auctionEntry->itemCount = item->GetCount();
+    auctionEntry->itemCount = newItem.quantity;
     auctionEntry->owner = player.GetGUID();
-    auctionEntry->startbid = 1000;
-    auctionEntry->buyout = 2000;
+    auctionEntry->startbid = newItem.bid;
+    auctionEntry->buyout = newItem.buyout;
     auctionEntry->bid = 0;
     auctionEntry->deposit = 100;
-    auctionEntry->expire_time = (time_t) 172800 + time(NULL);
+    auctionEntry->expire_time = (time_t) newItem.time + time(NULL);
     auctionEntry->auctionHouseEntry = HordeAhEntry;
 
     logInfo("savem item to db");
@@ -77,6 +78,38 @@ void Auctionator::CreateAuction(uint32 itemId)
  
     logInfo("commit character transaction");
     CharacterDatabase.CommitTransaction(trans);
+
+    ObjectAccessor::RemoveObject(&player);
+}
+
+void Auctionator::Initialize()
+{
+    std::string accountName = "Auctionator";
+
+    HordeAh = sAuctionMgr->GetAuctionsMap(AUCTIONHOUSE_HORDE);
+    HordeAhEntry = sAuctionHouseStore.LookupEntry(AUCTIONHOUSE_HORDE);
+
+    AllianceAh = sAuctionMgr->GetAuctionsMap(AUCTIONHOUSE_ALLIANCE);
+    AllianceAhEntry = sAuctionHouseStore.LookupEntry(AUCTIONHOUSE_ALLIANCE);
+
+    NeutralAh = sAuctionMgr->GetAuctionsMap(AUCTIONHOUSE_NEUTRAL);
+    NeutralAhEntry = sAuctionHouseStore.LookupEntry(AUCTIONHOUSE_NEUTRAL);
+
+    WorldSession _session(
+        config->characterId,
+        std::move(accountName),
+        nullptr, 
+        SEC_GAMEMASTER,
+        sWorld->getIntConfig(CONFIG_EXPANSION),
+        0,
+        LOCALE_enUS,
+        0,
+        false,
+        false,
+        0
+    );
+
+    session = &_session;
 }
 
 void Auctionator::InitializeConfig()
@@ -88,8 +121,8 @@ void Auctionator::InitializeConfig()
     logInfo("config->isEnabled: "
         + std::to_string(config->isEnabled));
 
-    config->characterId = sConfigMgr->GetOption<bool>("Auctionator.CharacterId", 0);
-    config->characterGuid = sConfigMgr->GetOption<bool>("Auctionator.CharacterGuid", 0);
+    config->characterId = sConfigMgr->GetOption<uint32>("Auctionator.CharacterId", 0);
+    config->characterGuid = sConfigMgr->GetOption<uint32>("Auctionator.CharacterGuid", 0);
     logInfo("CharacterIds: "
         + std::to_string(config->characterId)
         + "::"
@@ -97,36 +130,14 @@ void Auctionator::InitializeConfig()
     );
 
     logInfo("Auctionator config initialized");
+}
 
-    int32 accountId = 1;
-    int32 accountGuid = 1;
-    std::string accountName = "Auctionator";
+/**
+ * Update gets called on each "tick" of the global sAuctionHouseManager.
+*/
+void Auctionator::Update()
+{
 
-    HordeAh = 
-        sAuctionMgr->GetAuctionsMap(AUCTIONHOUSE_HORDE);
-
-    HordeAhEntry = 
-        sAuctionHouseStore.LookupEntry(AUCTIONHOUSE_HORDE);
-
-    WorldSession _session(accountId,
-        std::move(accountName),
-        nullptr, 
-        SEC_PLAYER,
-        sWorld->getIntConfig(CONFIG_EXPANSION),
-        0,
-        LOCALE_enUS,
-        0,
-        false,
-        false,
-        0
-    );
-
-    session = &_session;
-
-    // Player playerObject(session);
-    // AhPlayer = &playerObject;
-    // AhPlayer->Initialize(accountGuid);
-    // ObjectAccessor::AddObject(AhPlayer);
 }
 
 void Auctionator::logInfo(std::string message) {
