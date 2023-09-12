@@ -8,6 +8,7 @@
 #include "DatabaseEnv.h"
 #include "Player.h"
 #include "AuctionatorConfig.h"
+#include "AuctionatorSeller.h"
 #include <vector>
 
 Auctionator::Auctionator()
@@ -21,8 +22,6 @@ Auctionator::~Auctionator()
 
 void Auctionator::CreateAuction(AuctionatorItem newItem)
 {
-    //int32 itemId = 40896; // glyph of frenzied regeneration
-
     // will need this when we want to know details of the item for filtering
     // ItemTemplate const* prototype = sObjectMgr->GetItemTemplate(itemId);
 
@@ -137,9 +136,36 @@ void Auctionator::InitializeConfig()
 */
 void Auctionator::Update()
 {
+    logDebug("Auctionator tick");
 
+    logInfo("Neutral count: " + std::to_string(NeutralAh->Getcount()));
+    logInfo("Alliance count: " + std::to_string(AllianceAh->Getcount()));
+    logInfo("Horde count: " + std::to_string(HordeAh->Getcount()));
+
+    AuctionatorSeller seller = 
+        AuctionatorSeller(gAuctionator, static_cast<uint32>(AUCTIONHOUSE_HORDE));
+    seller.LetsGetToIt(1, 0, 5);
+}
+
+AuctionHouseObject* Auctionator::GetAuctionMgr(uint32 auctionHouseId)
+{
+    switch(auctionHouseId) {
+        case AUCTIONHOUSE_ALLIANCE:
+            return AllianceAh;
+            break;
+        case AUCTIONHOUSE_HORDE:
+            return HordeAh;
+            break;
+        default:
+            return NeutralAh;
+            break;
+    }
 }
 
 void Auctionator::logInfo(std::string message) {
     LOG_INFO("server.loading", "[Auctionator]: " + message); 
+}
+
+void Auctionator::logDebug(std::string message) {
+    LOG_DEBUG("server.loading", "[Auctionator]: " + message); 
 }

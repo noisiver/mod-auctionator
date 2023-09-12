@@ -49,7 +49,10 @@ class Auctionator
         void InitializeConfig();
         AuctionatorConfig *config;
         void logInfo(std::string message);
+        void logDebug(std::string message);
         void Update();
+
+        AuctionHouseObject *GetAuctionMgr(uint32 auctionHouseId);
 
         static Auctionator *getInstance()
         {

@@ -100,6 +100,7 @@ class AuctionatorHouseScript : public AuctionHouseScript
         {
             gAuctionator->Update();
         }
+
 };
 
 void AddAuctionatorScripts()
