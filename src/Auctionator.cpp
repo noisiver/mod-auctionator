@@ -30,19 +30,19 @@ void Auctionator::CreateAuction(AuctionatorItem newItem)
     player.Initialize(config->characterGuid);
     ObjectAccessor::AddObject(&player);
 
-    logInfo("Creating Auction for item: " + std::to_string(newItem.itemId));
+    logDebug("Creating Auction for item: " + std::to_string(newItem.itemId));
     // Create the item (and add it to the update queue for the player ")
     Item* item = Item::CreateItem(newItem.itemId, 1, &player);
 
-    // logInfo("adding item to player queue");
+    logTrace("adding item to player queue");
     item->AddToUpdateQueueOf(&player);
     uint32 randomPropertyId = Item::GenerateItemRandomPropertyId(newItem.itemId);
     if (randomPropertyId != 0) {
-        logInfo("adding random properties");
+        logDebug("adding random properties");
         item->SetItemRandomProperties(randomPropertyId);
     }
 
-    // logInfo("starting character transaction");
+    logTrace("starting character transaction");
     auto trans = CharacterDatabase.BeginTransaction();
 
     // set our quantity. If this is a stack it needs to get set here
@@ -52,7 +52,7 @@ void Auctionator::CreateAuction(AuctionatorItem newItem)
         item->SetCount(newItem.stackSize);
     }
 
-    // logInfo("creating auction entry");
+    logTrace("creating auction entry");
     AuctionEntry* auctionEntry = new AuctionEntry();
     auctionEntry->Id = sObjectMgr->GenerateAuctionID();
     auctionEntry->houseId = AUCTIONHOUSE_HORDE;
@@ -66,22 +66,22 @@ void Auctionator::CreateAuction(AuctionatorItem newItem)
     auctionEntry->expire_time = (time_t) newItem.time + time(NULL);
     auctionEntry->auctionHouseEntry = HordeAhEntry;
 
-    // logInfo("savem item to db");
+    logTrace("savem item to db");
     item->SaveToDB(trans);
 
-    // logInfo("removed from character queue");
+    logTrace("removed from character queue");
     item->RemoveFromUpdateQueueOf(&player);
 
-    // logInfo("add item to auction mgr");
+    logTrace("add item to auction mgr");
     sAuctionMgr->AddAItem(item);
  
-    // logInfo("add item to auction house");
+    logTrace("add item to auction house");
     HordeAh->AddAuction(auctionEntry);
  
-    // logInfo("save auction entry");
+    logTrace("save auction entry");
     auctionEntry->SaveToDB(trans);
  
-    // logInfo("commit character transaction");
+    logTrace("commit character transaction");
     CharacterDatabase.CommitTransaction(trans);
 
     ObjectAccessor::RemoveObject(&player);
@@ -142,6 +142,8 @@ void Auctionator::InitializeConfig()
 */
 void Auctionator::Update()
 {
+    uint32 maxAuctions = 10000;
+
     logDebug("Auctionator tick");
 
     logInfo("Neutral count: " + std::to_string(NeutralAh->Getcount()));
@@ -153,10 +155,13 @@ void Auctionator::Update()
 
     uint32 auctionCountHorde = gAuctionator->HordeAh->Getcount();
 
-    if (auctionCountHorde <= 10000) {
-        gAuctionator->logInfo("Count is good, here we go: " + std::to_string(auctionCountHorde));
-        // seller.LetsGetToIt(1, 0, 0, 2);
-        // seller.LetsGetToIt(1, 0, 2, 2);
+    if (auctionCountHorde <= maxAuctions) {
+        gAuctionator->logInfo(
+            "Count is good, here we go: "
+            + std::to_string(auctionCountHorde)
+            + " of " + std::to_string(maxAuctions)
+        );
+
         seller.LetsGetToIt(100);
     } else {
         gAuctionator->logInfo("Count over max: " + std::to_string(auctionCountHorde));
@@ -179,38 +184,13 @@ AuctionHouseObject* Auctionator::GetAuctionMgr(uint32 auctionHouseId)
 }
 
 void Auctionator::logInfo(std::string message) {
-    LOG_INFO("server.loading", "[Auctionator]: " + message); 
+    LOG_INFO("auctionator", "[Auctionator]: " + message); 
 }
 
 void Auctionator::logDebug(std::string message) {
-    LOG_DEBUG("server.loading", "[Auctionator]: " + message); 
+    LOG_DEBUG("auctionator", "[Auctionator]: " + message); 
 }
 
-
-        // seller.LetsGetToIt(2, 0, 2, 2);
-        // seller.LetsGetToIt(2, 2, 2, 2);
-        // seller.LetsGetToIt(2, 3, 2, 2);
-        // seller.LetsGetToIt(2, 4, 2, 2);
-        // seller.LetsGetToIt(2, 6, 2, 2);
-        // seller.LetsGetToIt(2, 7, 2, 2);
-        // seller.LetsGetToIt(2, 10, 2, 2);
-        // seller.LetsGetToIt(2, 11, 2, 2);
-        // seller.LetsGetToIt(2, 13, 2, 2);
-        // seller.LetsGetToIt(2, 14, 2, 2);
-        // seller.LetsGetToIt(2, 15, 2, 2);
-        // seller.LetsGetToIt(2, 16, 2, 2);
-        // seller.LetsGetToIt(2, 17, 2, 2);
-        // seller.LetsGetToIt(2, 18, 2, 2);
-        // seller.LetsGetToIt(2, 19, 2, 2);
-        // seller.LetsGetToIt(2, 20, 2, 2);
-
-        // seller.LetsGetToIt(4, 1, 2, 2);
-        // seller.LetsGetToIt(4, 2, 2, 2);
-        // seller.LetsGetToIt(4, 3, 2, 2);
-        // seller.LetsGetToIt(4, 4, 2, 2);
-        // seller.LetsGetToIt(4, 5, 2, 2);
-        // seller.LetsGetToIt(4, 6, 2, 2);
-        // seller.LetsGetToIt(4, 7, 2, 2);
-        // seller.LetsGetToIt(4, 8, 2, 2);
-        // seller.LetsGetToIt(4, 9, 2, 2);
-        // seller.LetsGetToIt(4, 10, 2, 2);
+void Auctionator::logTrace(std::string message) {
+    LOG_TRACE("auctionator", "[Auctionator]: " + message);
+}

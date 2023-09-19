@@ -52,6 +52,7 @@ class Auctionator
         AuctionatorConfig *config;
         void logInfo(std::string message);
         void logDebug(std::string message);
+        void logTrace(std::string message);
         void Update();
 
         AuctionHouseObject *GetAuctionMgr(uint32 auctionHouseId);

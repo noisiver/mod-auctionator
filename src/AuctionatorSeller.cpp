@@ -67,7 +67,7 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount)
 
     if (!result)
     {
-        nator->logInfo("No results for LetsGo item query");
+        nator->logDebug("No results for LetsGo item query");
         return;
     }
 
@@ -94,7 +94,7 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount)
         newItem.time = 60 * 60 * 12;
         newItem.stackSize = stackSize;
 
-        nator->logInfo("Adding item: " + itemName
+        nator->logDebug("Adding item: " + itemName
             + " with quantity of " + std::to_string(newItem.quantity)
             + " at price of " +  std::to_string(newItem.buyout)
         );
@@ -103,6 +103,6 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount)
         nator->CreateAuction(newItem);
     } while (result -> NextRow());
 
-    nator->logInfo("LetsGo count: " + std::to_string(count));
+    nator->logDebug("LetsGo count: " + std::to_string(count));
 
 };
