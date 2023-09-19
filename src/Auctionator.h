@@ -20,7 +20,8 @@ struct AuctionatorItem
     uint32 bid;
     uint32 buyout;
     uint32 time;
-    uint32 quantity; 
+    uint32 quantity;
+    uint32 stackSize;
 
     AuctionatorItem() :
         itemId(0),
@@ -28,7 +29,8 @@ struct AuctionatorItem
         bid(0),
         buyout(0),
         time(172800),
-        quantity(1) {}
+        quantity(1),
+        stackSize(1) {}
 };
 class Auctionator
 {

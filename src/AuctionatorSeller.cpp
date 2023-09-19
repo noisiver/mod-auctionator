@@ -19,29 +19,42 @@ AuctionatorSeller::~AuctionatorSeller()
     // TODO: clean up
 };
 
-void AuctionatorSeller::LetsGetToIt(uint32 itemClass, uint32 subClass, uint32 maxCount)
+void AuctionatorSeller::LetsGetToIt(uint32 maxCount)
 {
     std::string itemQuery = R"(
         SELECT
             it.entry
             , it.name
             , it.BuyPrice
-            , aic.name as classname
-            , aic2.name as subclassname
-            , aiq.name
-            , it.RequiredLevel 
+            , it.stackable
+            , aicconf.stack_count
         FROM
-            item_template it
-        LEFT JOIN auctionator_item_class aic ON it.class = aic.class AND aic.subclass IS NULL
-        LEFT JOIN auctionator_item_class aic2 on it.class = aic2.class AND it.subclass = aic2.subclass
-        LEFT JOIN auctionator_item_quality aiq ON it.Quality = aiq.quality
+            acore_world.auctionator_itemclass_config aicconf
+            LEFT JOIN acore_world.item_template it ON aicconf.class = it.class AND aicconf.subclass = it.subclass AND it.bonding >= aicconf.bonding
+            LEFT JOIN acore_world.mod_auctionator_disabled_items dis on it.entry = dis.item
+            LEFT JOIN (
+                -- this sub query lets us get the current count of each item already in the AH
+                -- so that we can filter out any items where itemCount >= max_count and not add
+                -- anymore of them.
+                SELECT
+                    count(ii.itemEntry) as itemCount
+                    , ii.itemEntry AS itemEntry
+                FROM
+                    acore_characters.item_instance ii 
+                    INNER JOIN acore_characters.auctionhouse ah ON ii.guid = ah.itemguid 
+                    LEFT JOIN acore_world.item_template it ON ii.itemEntry = it.entry 
+                GROUP BY ii.itemEntry, it.name
+            ) ic ON ic.itemEntry = it.entry
         WHERE
-            1
-            AND aic.class = {}
-            AND aic2.subclass = {}
-            AND it.bonding = 0
-            AND it.Flags != 16
-            AND it.BuyPrice > 0
+            -- filter out items from the disabled table
+            dis.item IS NULL
+            -- filter out items with 'depreacted' anywhere in the name
+            AND it.name NOT LIKE '%deprecated%'
+            -- filter out items that start with 'Test'
+            AND it.name NOT LIKE 'Test%'
+            AND it.name NOT LIKE 'NPC %'
+            -- filter out items where we are already at or above max_count for uniques in this class to limit dups
+            AND (ic.itemCount IS NULL OR ic.itemCount < aicconf.max_count)
         ORDER BY RAND()
         LIMIT {}
         ;
@@ -49,8 +62,6 @@ void AuctionatorSeller::LetsGetToIt(uint32 itemClass, uint32 subClass, uint32 ma
 
     QueryResult result = WorldDatabase.Query(
         itemQuery,
-        itemClass,
-        subClass,
         maxCount
     );
 
@@ -61,23 +72,35 @@ void AuctionatorSeller::LetsGetToIt(uint32 itemClass, uint32 subClass, uint32 ma
     }
 
     uint32 count = 0;
-
+    uint32 stackSize = 1;
+    uint32 price = 0;
     do
     {
         count++;
         Field* fields = result->Fetch();
         std::string itemName = fields[1].Get<std::string>();
 
+        stackSize = fields[4].Get<uint32>();
+
+        price = fields[2].Get<uint32>();
+        if (price == 0) {
+            price = 10000000;
+        }
+
         AuctionatorItem newItem = AuctionatorItem();
         newItem.itemId = fields[0].Get<uint32>();
         newItem.quantity = 1;
-        newItem.buyout = fields[2].Get<uint32>();
+        newItem.buyout = price * stackSize;
         newItem.time = 60 * 60 * 12;
+        newItem.stackSize = stackSize;
+
+        nator->logInfo("Adding item: " + itemName
+            + " with quantity of " + std::to_string(newItem.quantity)
+            + " at price of " +  std::to_string(newItem.buyout)
+        );
+
 
         nator->CreateAuction(newItem);
-        if (count > 5) {
-            break;
-        }
     } while (result -> NextRow());
 
     nator->logInfo("LetsGo count: " + std::to_string(count));
