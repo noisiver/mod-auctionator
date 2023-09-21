@@ -29,7 +29,7 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount)
             , it.stackable
             , aicconf.stack_count
         FROM
-            acore_world.auctionator_itemclass_config aicconf
+            acore_world.mod_auctionator_itemclass_config aicconf
             LEFT JOIN acore_world.item_template it ON 
                 aicconf.class = it.class 
                 AND aicconf.subclass = it.subclass 
