@@ -88,6 +88,11 @@ Auctionator.CharacterGuid = 2
 #                         NOTE: Does not work with dynamic filenames.
 #                         Example:  536870912 (512 MB)
 #
+
+# note that do to what I think is a bug in the Worldserver you must
+# copy all 3 of these log lines into your worldserver.conf file
+# or else it will not work.
+
 Appender.AuctionatorLog=2,5,0,auctionator.log,w
 Appender.AuctionatorConsole=1,4,0,"1 9 3 6 5 8"
 
