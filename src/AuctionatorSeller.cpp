@@ -30,7 +30,15 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount)
             , aicconf.stack_count
         FROM
             acore_world.auctionator_itemclass_config aicconf
-            LEFT JOIN acore_world.item_template it ON aicconf.class = it.class AND aicconf.subclass = it.subclass AND it.bonding >= aicconf.bonding
+            LEFT JOIN acore_world.item_template it ON 
+                aicconf.class = it.class 
+                AND aicconf.subclass = it.subclass 
+                -- skip BoP
+                AND it.bonding != 1
+                AND (
+                        it.bonding >= aicconf.bonding
+                        OR it.bonding = 0
+                    )
             LEFT JOIN acore_world.mod_auctionator_disabled_items dis on it.entry = dis.item
             LEFT JOIN (
                 -- this sub query lets us get the current count of each item already in the AH
@@ -58,7 +66,7 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount)
         ORDER BY RAND()
         LIMIT {}
         ;
-        )";
+    )";
 
     QueryResult result = WorldDatabase.Query(
         itemQuery,

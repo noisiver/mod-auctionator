@@ -2,11 +2,10 @@ SELECT
 	it.entry
 	, it.name
 	, aic.name as classname
-	, aic.class
-	, aic2.class 
 	, aic2.name as subclassname
 	, aiq.name
 	, it.RequiredLevel 
+	, it.BuyPrice 
 FROM
 	item_template it
 LEFT JOIN auctionator_item_class aic ON it.class = aic.class AND aic.subclass IS NULL
@@ -14,8 +13,10 @@ LEFT JOIN auctionator_item_class aic2 on it.class = aic2.class AND it.subclass =
 LEFT JOIN auctionator_item_quality aiq ON it.Quality = aiq.quality
 WHERE
 	1
-	AND aic2.name LIKE '%container%'
-	AND it.name like '%rune%'
+--	AND aic2.name LIKE '%container%'
+	AND it.name like '%turalyon%'
+--	AND it.class = 15
+--	AND it.subclass = 3
 LIMIT 1000;
 
 
@@ -64,17 +65,26 @@ ORDER BY RAND();
 
 -- Initial query using the itemclass_config table as the starting point for items.
 SELECT
-	aicconf.class
-	, aicconf.subclass
-	, it.entry
+	it.entry
 	, it.name
 	, it.BuyPrice 
 	, ic.itemCount
-	, aicconf.max_count 
+	, aicconf.max_count
+	, it.bonding 
+	, it.Quality 
+--	, aicconf.class
+--	, aicconf.subclass
 FROM
 	acore_world.auctionator_itemclass_config aicconf
-	LEFT JOIN acore_world.item_template it ON aicconf.class = it.class AND aicconf.subclass = it.subclass AND it.bonding >= aicconf.bonding
-	LEFT JOIN acore_world.mod_auctionator_disabled_items dis on it.entry = dis.item
+            LEFT JOIN acore_world.item_template it ON 
+                aicconf.class = it.class 
+                AND aicconf.subclass = it.subclass 
+                AND it.bonding != 1 -- skip BoP
+                AND (
+                        it.bonding >= aicconf.bonding
+                        OR it.bonding = 0
+                    )
+            LEFT JOIN acore_world.mod_auctionator_disabled_items dis on it.entry = dis.item
 	LEFT JOIN (
 		-- this sub query lets us get the current count of each item already in the AH
 		-- so that we can filter out any items where itemCount >= max_count and not add
@@ -92,6 +102,7 @@ WHERE
 	dis.item IS NULL
 	AND it.name NOT LIKE '%deprecated%'
 	AND it.name NOT LIKE 'Test%'
+    AND it.name NOT LIKE 'NPC %'
 	AND (ic.itemCount IS NULL OR ic.itemCount < aicconf.max_count)
 ORDER BY RAND()
 ;
@@ -186,9 +197,33 @@ CREATE TABLE acore_world.auctionator_itemclass_config (
 
 SELECT DISTINCT class FROM item_template;
 
+DELETE  FROM acore_world.auctionator_itemclass_config ;
+
+-- empty the auction house (2 queries)
 DELETE FROM acore_characters.item_instance ii WHERE ii.guid IN (
 	SELECT ah.itemguid
 	FROM acore_characters.auctionhouse ah
 );
 
-DELETE FROM acore_characters.auctionhouse;     
+DELETE FROM acore_characters.auctionhouse;
+
+
+-- clear mailing for cancelled auctions (2 queries)
+DELETE FROM acore_characters.mail_items mi WHERE mi.receiver = 2;
+DELETE FROM acore_characters.mail m WHERE receiver = 2;
+
+-- take a look at what is in the mail system
+SELECT
+	m.sender
+	, m.receiver 
+	, m.messageType 
+	, m.subject 
+	, it.name 
+	, ii.count 
+	, m.deliver_time 
+FROM
+	acore_characters.mail m 
+	INNER JOIN acore_characters.mail_items mi ON mi.mail_id = m.id 
+	INNER JOIN acore_characters.item_instance ii ON mi.item_guid = ii.guid 
+	INNER JOIN acore_world.item_template it ON ii.itemEntry = it.entry 
+;

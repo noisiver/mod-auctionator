@@ -35,8 +35,8 @@ class AuctionatorHouseScript : public AuctionHouseScript
         AuctionatorHouseScript() : AuctionHouseScript("AuctionatorHouseScript") {}
 
         void OnBeforeAuctionHouseMgrSendAuctionSuccessfulMail(
-                AuctionHouseMgr* /*auctionHouseMgr*/,
-                AuctionEntry* /*auction*/,
+                AuctionHouseMgr*,
+                AuctionEntry*,
                 Player* owner,
                 uint32& /*owner_accId*/,
                 uint32& /*profit*/,
@@ -53,8 +53,8 @@ class AuctionatorHouseScript : public AuctionHouseScript
         }
 
         void OnBeforeAuctionHouseMgrSendAuctionExpiredMail(
-                AuctionHouseMgr* /*auctionHouseMgr*/,
-                AuctionEntry* /*auction*/,
+                AuctionHouseMgr* ,
+                AuctionEntry*,
                 Player* owner,
                 uint32& /*owner_accId*/,
                 bool& sendNotification,
