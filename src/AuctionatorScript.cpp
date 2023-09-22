@@ -19,13 +19,6 @@ public:
         } else {
             LOG_INFO("server.loading", "[Auctionator]: Auctionator disabled.");
         }
-
-        // AuctionatorItem testItem;
-        // testItem.houseId = AUCTIONHOUSE_HORDE;
-        // testItem.itemId = 40896;
-        // testItem.buyout = 5000;
-
-        // gAuctionator->CreateAuction(testItem);
     }
 };
 

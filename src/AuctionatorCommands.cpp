@@ -36,8 +36,8 @@ class AuctionatorCommands : public CommandScript
             if(!command)
             {
                 handler->SendSysMessage("Auctionator commands:");
-                handler->SendSysMessage("    auctionator list");
                 handler->SendSysMessage("    auctionator add");
+                handler->SendSysMessage("    auctionator expireall");
                 return true;
             }
 
@@ -52,14 +52,28 @@ class AuctionatorCommands : public CommandScript
 
             std::string commandString(command);
 
+            gAuctionator->logDebug("Executing command: " + commandString);
+
             if (commandString.compare("add") == 0) {
                 gAuctionator->logInfo("Adding new Item for GM");
                 uint32 auctionHouseId = std::stoi(param1);
                 uint32 itemId = std::stoi(param2);
                 uint32 price = std::stoi(param3);
                 AuctionatorCommands::AddItemForBuyout(auctionHouseId, itemId, price);
-            } else if (command == "list") {
+            } else if (commandString == "expireall") {
+                if (!param1) {
+                    handler->SendSysMessage("[Auctionator] expireall: No Auction House Specified!");
+                    gAuctionator->logInfo("expireall: No Auction House Specified!");
+                    return true;
+                }
+                uint32 houseId = std::stoi(param1); 
+                
+                handler->SendSysMessage("[Auctionator] Expiring all Auctions for house: " + std::to_string(houseId));
+                gAuctionator->logInfo("expireall: Expiring all auctions for house: " + std::to_string(houseId));
 
+                gAuctionator->ExpireAllAuctions(houseId);
+
+                gAuctionator->logInfo("expireall: All auctions expired for house: " + std::to_string(houseId));
             } 
 
             return true;

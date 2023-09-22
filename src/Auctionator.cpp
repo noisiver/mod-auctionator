@@ -4,6 +4,7 @@
 #include "Config.h"
 #include "WorldSession.h"
 #include "AuctionHouseMgr.h"
+#include "GameTime.h"
 #include "ObjectMgr.h"
 #include "DatabaseEnv.h"
 #include "Player.h"
@@ -181,6 +182,51 @@ AuctionHouseObject* Auctionator::GetAuctionMgr(uint32 auctionHouseId)
             return NeutralAh;
             break;
     }
+}
+
+void Auctionator::ExpireAllAuctions(uint32 houseId)
+{
+    if (houseId != AUCTIONHOUSE_ALLIANCE &&
+        houseId != AUCTIONHOUSE_HORDE &&
+        houseId != AUCTIONHOUSE_NEUTRAL
+    ) {
+        logDebug("Invalid houseId: " + std::to_string(houseId)); 
+        return;
+    }
+
+    logDebug("Clearing auctions for houseId: " + std::to_string(houseId));
+
+    // std::string query = R"(
+    //     UPDATE acore_characters.auctionhouse
+    //     SET time = 0
+    //     WHERE 
+    //         houseId = {}
+    //         AND itemowner = {}
+    // )";
+
+    // CharacterDatabase.Query(
+    //     query,
+    //     houseId,
+    //     gAuctionator->config->characterGuid
+    // );
+
+    time_t checkTime = GameTime::GetGameTime().count() + 60;
+    ///- Handle expired auctions
+
+    AuctionHouseObject* ah = sAuctionMgr->GetAuctionsMapByHouseId(houseId);
+    for (
+        AuctionHouseObject::AuctionEntryMap::iterator itr,
+        iter = ah->GetAuctionsBegin();
+        iter != ah->GetAuctionsEnd(); 
+        )
+    {
+        itr = iter++;
+        AuctionEntry* auction = (*itr).second;
+        logDebug("got one! " + std::to_string(auction->expire_time));
+        auction->expire_time = 0;
+    }
+
+    logDebug("House auctions expired: " + std::to_string(houseId));
 }
 
 void Auctionator::logInfo(std::string message) {

@@ -47,6 +47,7 @@ class Auctionator
     public:
         ~Auctionator();
         void CreateAuction(AuctionatorItem newItem);
+        void ExpireAllAuctions(uint32 houseId);
         void Initialize();
         void InitializeConfig();
         AuctionatorConfig *config;
@@ -56,6 +57,7 @@ class Auctionator
         void Update();
 
         AuctionHouseObject *GetAuctionMgr(uint32 auctionHouseId);
+
 
         static Auctionator *getInstance()
         {
