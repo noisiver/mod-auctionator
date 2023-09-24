@@ -15,7 +15,7 @@ class AuctionatorSeller
     public:
         AuctionatorSeller(Auctionator* natorParam, uint32 auctionHouseIdParam);
         ~AuctionatorSeller();
-        void LetsGetToIt(uint32 maxCount);
+        void LetsGetToIt(uint32 maxCount, uint32 houseId);
 };
 
 #endif  //AUCTIONATORSELLER_H

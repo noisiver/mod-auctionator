@@ -200,12 +200,12 @@ SELECT DISTINCT class FROM item_template;
 DELETE  FROM acore_world.auctionator_itemclass_config ;
 
 -- empty the auction house (2 queries)
-DELETE FROM mod_acore_characters.item_instance ii WHERE ii.guid IN (
+DELETE FROM acore_characters.item_instance ii WHERE ii.guid IN (
 	SELECT ah.itemguid
-	FROM mod_acore_characters.auctionhouse ah
+	FROM acore_characters.auctionhouse ah
 );
 
-DELETE FROM mod_acore_characters.auctionhouse;
+DELETE FROM acore_characters.auctionhouse;
 
 
 -- clear mailing for cancelled auctions (2 queries)

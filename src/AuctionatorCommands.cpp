@@ -74,7 +74,54 @@ class AuctionatorCommands : public CommandScript
                 gAuctionator->ExpireAllAuctions(houseId);
 
                 gAuctionator->logInfo("expireall: All auctions expired for house: " + std::to_string(houseId));
-            } 
+            } else if (commandString == "enable") {
+                if (!param1) {
+                    handler->SendSysMessage("[Auctionator] enable: No Auction House Specified!");
+                    gAuctionator->logInfo("enable: No Auction House Specified!");
+                    return true;
+                }
+
+                std::string toEnable(param1);
+                if (toEnable == "hordeseller") {
+                    gAuctionator->config->hordeSellerEnabled = 1;
+                    return true;
+                } else if (toEnable == "allianceseller") {
+                    gAuctionator->config->allianceSellerEnabled = 1;
+                    return true;
+                } else if (toEnable == "neutralseller") {
+                    gAuctionator->config->neutralSellerEnabled = 1;
+                    return true;
+                } else if (toEnable == "all") {
+                    gAuctionator->config->hordeSellerEnabled = 1;
+                    gAuctionator->config->allianceSellerEnabled = 1;
+                    gAuctionator->config->neutralSellerEnabled = 1;
+                    return true;
+                }
+            } else if (commandString == "disable") {
+                if (!param1) {
+                    handler->SendSysMessage("[Auctionator] disable: No Auction House Specified!");
+                    gAuctionator->logInfo("disable: No Auction House Specified!");
+                    return true;
+                }
+
+                std::string toEnable(param1);
+                if (toEnable == "hordeseller") {
+                    gAuctionator->config->hordeSellerEnabled = 0;
+                    return true;
+                } else if (toEnable == "allianceseller") {
+                    gAuctionator->config->allianceSellerEnabled = 0;
+                    return true;
+                } else if (toEnable == "neutralseller") {
+                    gAuctionator->config->neutralSellerEnabled = 0;
+                    return true;
+                } else if (toEnable == "all") {
+                    gAuctionator->config->hordeSellerEnabled = 0;
+                    gAuctionator->config->allianceSellerEnabled = 0;
+                    gAuctionator->config->neutralSellerEnabled = 0;
+                    return true;
+                }
+            }
+
 
             return true;
         }
@@ -86,7 +133,7 @@ class AuctionatorCommands : public CommandScript
             newItem.itemId = itemId;
             newItem.buyout = price;
 
-            gAuctionator->CreateAuction(newItem);
+            gAuctionator->CreateAuction(newItem, AUCTIONHOUSE_NEUTRAL);
         } 
 
 };

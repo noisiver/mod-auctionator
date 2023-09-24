@@ -19,7 +19,7 @@ AuctionatorSeller::~AuctionatorSeller()
     // TODO: clean up
 };
 
-void AuctionatorSeller::LetsGetToIt(uint32 maxCount)
+void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
 {
     std::string itemQuery = R"(
         SELECT
@@ -105,12 +105,15 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount)
         nator->logDebug("Adding item: " + itemName
             + " with quantity of " + std::to_string(newItem.quantity)
             + " at price of " +  std::to_string(newItem.buyout)
+            + " to house " + std::to_string(houseId)
         );
 
 
-        nator->CreateAuction(newItem);
+        nator->CreateAuction(newItem, houseId);
     } while (result -> NextRow());
 
-    nator->logDebug("LetsGo count: " + std::to_string(count));
+    nator->logDebug("Items added houseId("
+        + std::to_string(houseId)
+        + ") this run: " + std::to_string(count));
 
 };

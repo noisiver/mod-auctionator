@@ -12,6 +12,7 @@ class WorldSession;
 #include "ItemTemplate.h"
 #include "AuctionatorConfig.h"
 #include "AuctionHouseMgr.h"
+#include "Config.h"
 
 struct AuctionatorItem
 {
@@ -46,10 +47,12 @@ class Auctionator
 
     public:
         ~Auctionator();
-        void CreateAuction(AuctionatorItem newItem);
+        void CreateAuction(AuctionatorItem newItem, uint32 houseId);
         void ExpireAllAuctions(uint32 houseId);
+        AuctionHouseEntry const *GetAuctionHouseEntry(uint32 houseId);
+        AuctionHouseObject *GetAuctionHouse(uint32 houseId);
         void Initialize();
-        void InitializeConfig();
+        void InitializeConfig(ConfigMgr* configMgr);
         AuctionatorConfig *config;
         void logInfo(std::string message);
         void logDebug(std::string message);

@@ -16,6 +16,10 @@ class AuctionatorConfig
         uint32 auctionHouseId;
         uint32 internalHouseId;
 
+        uint32 hordeSellerEnabled;
+        uint32 allianceSellerEnabled;
+        uint32 neutralSellerEnabled;
+
         AuctionatorConfig(uint32 id)
         {
             auctionHouseId = id;
