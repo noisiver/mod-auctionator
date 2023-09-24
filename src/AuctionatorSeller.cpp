@@ -51,6 +51,7 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
                     acore_characters.item_instance ii 
                     INNER JOIN acore_characters.auctionhouse ah ON ii.guid = ah.itemguid 
                     LEFT JOIN acore_world.item_template it ON ii.itemEntry = it.entry 
+                WHERE ah.houseId = {}
                 GROUP BY ii.itemEntry, it.name
             ) ic ON ic.itemEntry = it.entry
         WHERE
@@ -70,6 +71,7 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
 
     QueryResult result = WorldDatabase.Query(
         itemQuery,
+        houseId,
         maxCount
     );
 
@@ -112,7 +114,7 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
         nator->CreateAuction(newItem, houseId);
     } while (result -> NextRow());
 
-    nator->logDebug("Items added houseId("
+    nator->logInfo("Items added houseId("
         + std::to_string(houseId)
         + ") this run: " + std::to_string(count));
 

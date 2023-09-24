@@ -146,13 +146,13 @@ void Auctionator::Initialize()
 {
     std::string accountName = "Auctionator";
 
-    HordeAh = sAuctionMgr->GetAuctionsMap(AUCTIONHOUSE_HORDE);
+    HordeAh = sAuctionMgr->GetAuctionsMapByHouseId(AUCTIONHOUSE_HORDE);
     HordeAhEntry = sAuctionHouseStore.LookupEntry(AUCTIONHOUSE_HORDE);
 
-    AllianceAh = sAuctionMgr->GetAuctionsMap(AUCTIONHOUSE_ALLIANCE);
+    AllianceAh = sAuctionMgr->GetAuctionsMapByHouseId(AUCTIONHOUSE_ALLIANCE);
     AllianceAhEntry = sAuctionHouseStore.LookupEntry(AUCTIONHOUSE_ALLIANCE);
 
-    NeutralAh = sAuctionMgr->GetAuctionsMap(AUCTIONHOUSE_NEUTRAL);
+    NeutralAh = sAuctionMgr->GetAuctionsMapByHouseId(AUCTIONHOUSE_NEUTRAL);
     NeutralAhEntry = sAuctionHouseStore.LookupEntry(AUCTIONHOUSE_NEUTRAL);
 
     WorldSession _session(

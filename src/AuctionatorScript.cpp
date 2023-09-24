@@ -96,8 +96,26 @@ class AuctionatorHouseScript : public AuctionHouseScript
 
 };
 
+
+class AuctionatorMailScript : public MailScript
+{
+public:
+    AuctionatorMailScript() : MailScript("AuctionatorMailScript") { }
+
+    void OnBeforeMailDraftSendMailTo(MailDraft* /*mailDraft*/, MailReceiver const& receiver, MailSender const& sender, MailCheckMask& /*checked*/, uint32& /*deliver_delay*/, uint32& /*custom_expiration*/, bool& deleteMailItemsFromDB, bool& sendMail) override
+    {
+        if (receiver.GetPlayerGUIDLow() == gAuctionator->config->characterGuid)
+        {
+            if (sender.GetMailMessageType() == MAIL_AUCTION)        // auction mail with items
+                deleteMailItemsFromDB = true;
+            sendMail = false;
+        }
+    }
+};
+
 void AddAuctionatorScripts()
 {
     new AuctionatorWorldScript();
     new AuctionatorHouseScript();
+    new AuctionatorMailScript();
 };

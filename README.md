@@ -18,6 +18,40 @@ DELETE FROM acore_world.mod_acore_characters.item_instance ii WHERE ii.guid IN (
 DELETE FROM acore_world.mod_acore_characters.auctionhouse;
 ```
 
+## GM commands
+
+### auctionator disable <faction>seller
+
+Disable the seller for a particular faction.
+
+```
+.auctionator disable hordeseller
+```
+
+### auctionator enable <faction>seller
+
+Enable the seller for a particular faction.
+
+```
+.auctionator enable hordeseller
+```
+
+### auctionator add <houseid> <itemid> <price>
+
+Add an Iridescent Pearl to the Neutral AH for 1 gold buyout.
+
+```
+.auctionator add 7 5500 10000
+```
+
+### auctionator expireall <houseid>
+
+Expire all auctions for the specified house on the next tick.
+
+```
+.auctionator expireall 7
+```
+
 ## Current limitations
 
 1. Caps at a hardcoded 10000 items in the AH (you can edit and recompile).
