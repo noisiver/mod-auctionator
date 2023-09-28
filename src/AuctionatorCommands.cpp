@@ -31,7 +31,7 @@ class AuctionatorCommands : public CommandScript
 
         static bool HandleCommandOptions(ChatHandler* handler, const char* args)
         {
-            gAuctionator->logInfo("Excecuting Auctionator!");
+            gAuctionator->logInfo("Executing Auctionator!");
 
             const char* command = strtok((char*)args, " ");
 
@@ -91,8 +91,8 @@ class AuctionatorCommands : public CommandScript
                     return true;
                 } else if (toEnable == "neutralseller") {
                     gAuctionator->config->neutralSeller.enabled = 1;
-                    return true;
                     gAuctionator->logInfo("Neutral seller enabled");
+                    return true;
                 } else if (toEnable == "all") {
                     gAuctionator->config->hordeSeller.enabled = 1;
                     gAuctionator->config->allianceSeller.enabled = 1;
