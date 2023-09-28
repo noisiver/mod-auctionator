@@ -63,28 +63,68 @@ WHERE
     AND it.Quality >= 1
 ORDER BY RAND();
 
+SELECT li.item, it.name FROM (
+    SELECT item FROM creature_loot_template UNION
+    SELECT item FROM reference_loot_template UNION
+    SELECT item FROM disenchant_loot_template UNION
+    SELECT item FROM fishing_loot_template UNION
+    SELECT item FROM gameobject_loot_template UNION
+    SELECT item FROM item_loot_template UNION
+    SELECT item FROM milling_loot_template UNION
+    SELECT item FROM pickpocketing_loot_template UNION
+    SELECT item FROM prospecting_loot_template UNION 
+    SELECT item FROM skinning_loot_template
+) li
+INNER JOIN acore_world.item_template it ON li.item = it.entry 
+;
+
 -- Initial query using the itemclass_config table as the starting point for items.
 SELECT
 	it.entry
 	, it.name
 	, it.BuyPrice 
-	, ic.itemCount
-	, aicconf.max_count
-	, it.bonding 
-	, it.Quality 
---	, aicconf.class
---	, aicconf.subclass
+	, it. stackable
+	, aicconf.stack_count
+--	, ic.itemCount
+--	, aicconf.max_count
+--	, it.bonding 
+--	, it.Quality 
 FROM
-	acore_world.auctionator_itemclass_config aicconf
-            LEFT JOIN acore_world.item_template it ON 
-                aicconf.class = it.class 
-                AND aicconf.subclass = it.subclass 
-                AND it.bonding != 1 -- skip BoP
-                AND (
-                        it.bonding >= aicconf.bonding
-                        OR it.bonding = 0
-                    )
-            LEFT JOIN acore_world.mod_auctionator_disabled_items dis on it.entry = dis.item
+	acore_world.mod_auctionator_itemclass_config aicconf
+--             LEFT JOIN acore_world.item_template it ON 
+--                 aicconf.class = it.class 
+--                 AND aicconf.subclass = it.subclass 
+--                 AND it.bonding != 1 -- skip BoP
+--                 AND (
+--                         it.bonding >= aicconf.bonding
+--                         OR it.bonding = 0
+--                     )
+    LEFT JOIN (
+    		-- This union is kinda bad because it relies on a temp table
+    		-- to do the inner join. Probably need to do something better
+    		-- here.
+	    	SELECT itt.entry, itt.name, itt.class, itt.subclass, itt.bonding, itt.BuyPrice, itt.quality, itt.stackable FROM (
+			    SELECT item FROM creature_loot_template UNION
+			    SELECT item FROM reference_loot_template UNION
+			    SELECT item FROM disenchant_loot_template UNION
+			    SELECT item FROM fishing_loot_template UNION
+			    SELECT item FROM gameobject_loot_template UNION
+			    SELECT item FROM item_loot_template UNION
+			    SELECT item FROM milling_loot_template UNION
+			    SELECT item FROM pickpocketing_loot_template UNION
+			    SELECT item FROM prospecting_loot_template UNION 
+			    SELECT item FROM skinning_loot_template
+			) li
+			INNER JOIN acore_world.item_template itt ON li.item = itt.entry 
+		) it
+        ON aicconf.class = it.class
+        AND aicconf.subclass = it.subclass
+        AND it.bonding != 1
+        AND (
+            it.bonding >= aicconf.bonding
+            OR it.bonding = 0
+        )
+    LEFT JOIN acore_world.mod_auctionator_disabled_items dis on it.Entry = dis.item
 	LEFT JOIN (
 		-- this sub query lets us get the current count of each item already in the AH
 		-- so that we can filter out any items where itemCount >= max_count and not add
@@ -99,11 +139,15 @@ FROM
 		GROUP BY ii.itemEntry, it.name
 	) ic ON ic.itemEntry = it.entry
 WHERE
-	dis.item IS NULL
-	AND it.name NOT LIKE '%deprecated%'
-	AND it.name NOT LIKE 'Test%'
+    -- filter out items from the disabled table
+    dis.item IS NULL
+    -- filter out items with 'depreacted' anywhere in the name
+    AND it.name NOT LIKE '%deprecated%'
+    -- filter out items that start with 'Test'
+    AND it.name NOT LIKE 'Test%'
     AND it.name NOT LIKE 'NPC %'
-	AND (ic.itemCount IS NULL OR ic.itemCount < aicconf.max_count)
+    -- filter out items where we are already at or above max_count for uniques in this class to limit dups
+    AND (ic.itemCount IS NULL OR ic.itemCount < aicconf.max_count)
 ORDER BY RAND()
 ;
 

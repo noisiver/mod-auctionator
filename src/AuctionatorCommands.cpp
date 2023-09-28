@@ -10,7 +10,9 @@ using namespace Acore::ChatCommands;
 class AuctionatorCommands : public CommandScript
 {
     public:
-        AuctionatorCommands() : CommandScript("AuctionatorCommandScript") { }
+        AuctionatorCommands() : CommandScript("AuctionatorCommandScript")
+        {
+        }
 
     private:
         std::vector<ChatCommand> GetCommands() const override
@@ -35,10 +37,7 @@ class AuctionatorCommands : public CommandScript
 
             if(!command)
             {
-                handler->SendSysMessage("Auctionator commands:");
-                handler->SendSysMessage("    auctionator add");
-                handler->SendSysMessage("    auctionator expireall");
-                return true;
+                command = "help"; 
             }
 
             const char* param1 = strtok(NULL, " ");
@@ -120,6 +119,9 @@ class AuctionatorCommands : public CommandScript
                     gAuctionator->config->neutralSellerEnabled = 0;
                     return true;
                 }
+            } else if (commandString == "help") {
+                AuctionatorCommands::ShowHelp(handler);
+                return true;
             }
 
 
@@ -136,6 +138,18 @@ class AuctionatorCommands : public CommandScript
             gAuctionator->CreateAuction(newItem, AUCTIONHOUSE_NEUTRAL);
         } 
 
+        static void ShowHelp(ChatHandler* handler)
+        {
+            std::string helpString(R"(
+Auctionator Help:
+disable ...
+enable ...
+add ...
+expireall ...
+help
+            )");
+            handler->SendSysMessage(helpString);
+        }
 };
 
 void AddAuctionatorCommands()
