@@ -91,32 +91,34 @@ SELECT
 --	, it.Quality 
 FROM
 	acore_world.mod_auctionator_itemclass_config aicconf
---             LEFT JOIN acore_world.item_template it ON 
---                 aicconf.class = it.class 
---                 AND aicconf.subclass = it.subclass 
---                 AND it.bonding != 1 -- skip BoP
---                 AND (
---                         it.bonding >= aicconf.bonding
---                         OR it.bonding = 0
---                     )
-    LEFT JOIN (
-    		-- This union is kinda bad because it relies on a temp table
-    		-- to do the inner join. Probably need to do something better
-    		-- here.
-	    	SELECT itt.entry, itt.name, itt.class, itt.subclass, itt.bonding, itt.BuyPrice, itt.quality, itt.stackable FROM (
-			    SELECT item FROM creature_loot_template UNION
-			    SELECT item FROM reference_loot_template UNION
-			    SELECT item FROM disenchant_loot_template UNION
-			    SELECT item FROM fishing_loot_template UNION
-			    SELECT item FROM gameobject_loot_template UNION
-			    SELECT item FROM item_loot_template UNION
-			    SELECT item FROM milling_loot_template UNION
-			    SELECT item FROM pickpocketing_loot_template UNION
-			    SELECT item FROM prospecting_loot_template UNION 
-			    SELECT item FROM skinning_loot_template
-			) li
-			INNER JOIN acore_world.item_template itt ON li.item = itt.entry 
-		) it
+    LEFT JOIN acore_world.item_template it ON 
+        aicconf.class = it.class 
+        AND aicconf.subclass = it.subclass 
+        AND it.bonding != 1 -- skip BoP
+        AND (
+                it.bonding >= aicconf.bonding
+                OR it.bonding = 0
+            )
+
+        -- this union based query doesn't work because it only looks at LOOT items and ignores crafted
+--     LEFT JOIN (
+--     		-- This union is kinda bad because it relies on a temp table
+--     		-- to do the inner join. Probably need to do something better
+--     		-- here.
+-- 	    	SELECT itt.entry, itt.name, itt.class, itt.subclass, itt.bonding, itt.BuyPrice, itt.quality, itt.stackable FROM (
+-- 			    SELECT item FROM creature_loot_template UNION
+-- 			    SELECT item FROM reference_loot_template UNION
+-- 			    SELECT item FROM disenchant_loot_template UNION
+-- 			    SELECT item FROM fishing_loot_template UNION
+-- 			    SELECT item FROM gameobject_loot_template UNION
+-- 			    SELECT item FROM item_loot_template UNION
+-- 			    SELECT item FROM milling_loot_template UNION
+-- 			    SELECT item FROM pickpocketing_loot_template UNION
+-- 			    SELECT item FROM prospecting_loot_template UNION 
+-- 			    SELECT item FROM skinning_loot_template
+-- 			) li
+-- 			INNER JOIN acore_world.item_template itt ON li.item = itt.entry 
+-- 		) it
         ON aicconf.class = it.class
         AND aicconf.subclass = it.subclass
         AND it.bonding != 1

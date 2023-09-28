@@ -30,40 +30,15 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
             , aicconf.stack_count
         FROM
             acore_world.mod_auctionator_itemclass_config aicconf
---            LEFT JOIN acore_world.item_template it ON 
---                aicconf.class = it.class 
---                AND aicconf.subclass = it.subclass 
---                -- skip BoP
---                AND it.bonding != 1
---                AND (
---                        it.bonding >= aicconf.bonding
---                        OR it.bonding = 0
---                    )
-            LEFT JOIN (
-                    -- This union is kinda bad because it relies on a temp table
-                    -- to do the inner join. Probably need to do something better
-                    -- here.
-                    SELECT itt.entry, itt.name, itt.class, itt.subclass, itt.bonding, itt.BuyPrice, itt.quality, itt.stackable FROM (
-                        SELECT item FROM creature_loot_template UNION
-                        SELECT item FROM reference_loot_template UNION
-                        SELECT item FROM disenchant_loot_template UNION
-                        SELECT item FROM fishing_loot_template UNION
-                        SELECT item FROM gameobject_loot_template UNION
-                        SELECT item FROM item_loot_template UNION
-                        SELECT item FROM milling_loot_template UNION
-                        SELECT item FROM pickpocketing_loot_template UNION
-                        SELECT item FROM prospecting_loot_template UNION 
-                        SELECT item FROM skinning_loot_template
-                    ) li
-                    INNER JOIN acore_world.item_template itt ON li.item = itt.entry 
-                ) it
-                ON aicconf.class = it.class
-                AND aicconf.subclass = it.subclass
+            LEFT JOIN acore_world.item_template it ON 
+                aicconf.class = it.class 
+                AND aicconf.subclass = it.subclass 
+                -- skip BoP
                 AND it.bonding != 1
                 AND (
                     it.bonding >= aicconf.bonding
                     OR it.bonding = 0
-            )
+                )
             LEFT JOIN acore_world.mod_auctionator_disabled_items dis on it.entry = dis.item
             LEFT JOIN (
                 -- this sub query lets us get the current count of each item already in the AH
