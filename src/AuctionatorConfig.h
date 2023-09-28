@@ -4,6 +4,13 @@
 
 #include "Common.h"
 
+struct AuctionatorHouseConfig
+{
+    public:
+        uint32 enabled;
+        uint32 maxAuctions;
+};
+
 class AuctionatorConfig
 {
     private:
@@ -16,9 +23,9 @@ class AuctionatorConfig
         uint32 auctionHouseId;
         uint32 internalHouseId;
 
-        uint32 hordeSellerEnabled;
-        uint32 allianceSellerEnabled;
-        uint32 neutralSellerEnabled;
+        AuctionatorHouseConfig hordeSeller;
+        AuctionatorHouseConfig allianceSeller;
+        AuctionatorHouseConfig neutralSeller;
 
         AuctionatorConfig(uint32 id)
         {

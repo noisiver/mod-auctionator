@@ -82,18 +82,22 @@ class AuctionatorCommands : public CommandScript
 
                 std::string toEnable(param1);
                 if (toEnable == "hordeseller") {
-                    gAuctionator->config->hordeSellerEnabled = 1;
+                    gAuctionator->config->hordeSeller.enabled = 1;
+                    gAuctionator->logInfo("Horde seller enabled");
                     return true;
                 } else if (toEnable == "allianceseller") {
-                    gAuctionator->config->allianceSellerEnabled = 1;
+                    gAuctionator->config->allianceSeller.enabled = 1;
+                    gAuctionator->logInfo("Alliance seller enabled");
                     return true;
                 } else if (toEnable == "neutralseller") {
-                    gAuctionator->config->neutralSellerEnabled = 1;
+                    gAuctionator->config->neutralSeller.enabled = 1;
                     return true;
+                    gAuctionator->logInfo("Neutral seller enabled");
                 } else if (toEnable == "all") {
-                    gAuctionator->config->hordeSellerEnabled = 1;
-                    gAuctionator->config->allianceSellerEnabled = 1;
-                    gAuctionator->config->neutralSellerEnabled = 1;
+                    gAuctionator->config->hordeSeller.enabled = 1;
+                    gAuctionator->config->allianceSeller.enabled = 1;
+                    gAuctionator->config->neutralSeller.enabled = 1;
+                    gAuctionator->logInfo("All sellers enabled");
                     return true;
                 }
             } else if (commandString == "disable") {
@@ -105,18 +109,22 @@ class AuctionatorCommands : public CommandScript
 
                 std::string toEnable(param1);
                 if (toEnable == "hordeseller") {
-                    gAuctionator->config->hordeSellerEnabled = 0;
+                    gAuctionator->config->hordeSeller.enabled = 0;
+                    gAuctionator->logInfo("Horde seller disabled");
                     return true;
                 } else if (toEnable == "allianceseller") {
-                    gAuctionator->config->allianceSellerEnabled = 0;
+                    gAuctionator->config->allianceSeller.enabled = 0;
+                    gAuctionator->logInfo("Alliance seller disabled");
                     return true;
                 } else if (toEnable == "neutralseller") {
-                    gAuctionator->config->neutralSellerEnabled = 0;
+                    gAuctionator->config->neutralSeller.enabled = 0;
+                    gAuctionator->logInfo("Neutral seller disabled");
                     return true;
                 } else if (toEnable == "all") {
-                    gAuctionator->config->hordeSellerEnabled = 0;
-                    gAuctionator->config->allianceSellerEnabled = 0;
-                    gAuctionator->config->neutralSellerEnabled = 0;
+                    gAuctionator->config->hordeSeller.enabled = 0;
+                    gAuctionator->config->allianceSeller.enabled = 0;
+                    gAuctionator->config->neutralSeller.enabled = 0;
+                    gAuctionator->logInfo("All sellers disabled");
                     return true;
                 }
             } else if (commandString == "help") {

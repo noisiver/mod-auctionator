@@ -189,9 +189,13 @@ void Auctionator::InitializeConfig(ConfigMgr* configMgr)
         + std::to_string(config->characterGuid)
     );
 
-    config->allianceSellerEnabled = configMgr->GetOption<uint32>("Auctionator.AllianceSellerEnabled", 0);
-    config->hordeSellerEnabled = configMgr->GetOption<uint32>("Auctionator.HordeSellerEnabled", 0);
-    config->neutralSellerEnabled = configMgr->GetOption<uint32>("Auctionator.NeutralSellerEnabled", 0);
+    config->hordeSeller.enabled = configMgr->GetOption<uint32>("Auctionator.HordeSeller.Enabled", 0);
+    config->allianceSeller.enabled = configMgr->GetOption<uint32>("Auctionator.AllianceSeller.Enabled", 0);
+    config->neutralSeller.enabled = configMgr->GetOption<uint32>("Auctionator.NeutralSeller.Enabled", 0);
+
+    config->hordeSeller.maxAuctions = configMgr->GetOption<uint32>("Auctionator.HordeSeller.MaxAuctions", 50);
+    config->allianceSeller.maxAuctions = configMgr->GetOption<uint32>("Auctionator.AllianceSeller.MaxAuctions", 50);
+    config->neutralSeller.maxAuctions = configMgr->GetOption<uint32>("Auctionator.NeutralSeller.MaxAuctions", 50);
 
     logInfo("Auctionator config initialized");
 }
@@ -201,8 +205,6 @@ void Auctionator::InitializeConfig(ConfigMgr* configMgr)
 */
 void Auctionator::Update()
 {
-    uint32 maxAuctions = 10000;
-
     logDebug("Auctionator tick");
 
     logInfo("Neutral count: " + std::to_string(NeutralAh->Getcount()));
@@ -210,17 +212,17 @@ void Auctionator::Update()
     logInfo("Horde count: " + std::to_string(HordeAh->Getcount()));
 
 
-    if (config->allianceSellerEnabled) {
+    if (config->allianceSeller.enabled) {
         AuctionatorSeller sellerAlliance = 
             AuctionatorSeller(gAuctionator, static_cast<uint32>(AUCTIONHOUSE_ALLIANCE));
 
         uint32 auctionCountAlliance = AllianceAh->Getcount();
 
-        if (auctionCountAlliance <= maxAuctions) {
+        if (auctionCountAlliance <= config->allianceSeller.maxAuctions) {
             logInfo(
                 "Alliance count is good, here we go: "
                 + std::to_string(auctionCountAlliance)
-                + " of " + std::to_string(maxAuctions)
+                + " of " + std::to_string(config->allianceSeller.maxAuctions)
             );
 
             sellerAlliance.LetsGetToIt(100, AUCTIONHOUSE_ALLIANCE);
@@ -231,17 +233,17 @@ void Auctionator::Update()
         logInfo("Alliance Seller Disabled");
     }
 
-    if (config->hordeSellerEnabled) {
+    if (config->hordeSeller.enabled) {
         AuctionatorSeller sellerHorde = 
             AuctionatorSeller(gAuctionator, static_cast<uint32>(AUCTIONHOUSE_HORDE));
 
         uint32 auctionCountHorde = HordeAh->Getcount();
 
-        if (auctionCountHorde <= maxAuctions) {
+        if (auctionCountHorde <= config->hordeSeller.maxAuctions) {
             logInfo(
                 "Horde count is good, here we go: "
                 + std::to_string(auctionCountHorde)
-                + " of " + std::to_string(maxAuctions)
+                + " of " + std::to_string(config->hordeSeller.maxAuctions)
             );
 
             sellerHorde.LetsGetToIt(100, AUCTIONHOUSE_HORDE);
@@ -252,17 +254,17 @@ void Auctionator::Update()
         logInfo("Horde Seller Disabled");
     }
 
-    if (config->neutralSellerEnabled) {
+    if (config->neutralSeller.enabled) {
         AuctionatorSeller sellerNeutral = 
             AuctionatorSeller(gAuctionator, static_cast<uint32>(AUCTIONHOUSE_NEUTRAL));
 
         uint32 auctionCountNeutral = NeutralAh->Getcount();
 
-        if (auctionCountNeutral <= maxAuctions) {
+        if (auctionCountNeutral <= config->neutralSeller.maxAuctions) {
             logInfo(
                 "Neutral count is good, here we go: "
                 + std::to_string(auctionCountNeutral)
-                + " of " + std::to_string(maxAuctions)
+                + " of " + std::to_string(config->neutralSeller.maxAuctions)
             );
 
             sellerNeutral.LetsGetToIt(100, AUCTIONHOUSE_NEUTRAL);

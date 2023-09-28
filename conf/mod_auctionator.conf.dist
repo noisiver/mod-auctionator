@@ -22,9 +22,15 @@ Auctionator.CharacterId = 2
 # the character id
 Auctionator.CharacterGuid = 2
 
-Auctionator.HordeSellerEnabled = 0
-Auctionator.AllianceSellerEnabled = 0
-Auctionator.NeutralSellerEnabled = 0
+Auctionator.HordeSeller.Enabled = 0
+Auctionator.HordeSeller.MaxAuctions = 5000
+
+Auctionator.AllianceSeller.Enabled = 0
+Auctionator.AllianceSeller.MaxAuctions = 5000
+
+Auctionator.NeutralSeller.Enabled = 0
+Auctionator.NeutralSeller.MaxAuctions = 5000
+
 
 ###################################################################################################
 # LOGGING SYSTEM SETTINGS
