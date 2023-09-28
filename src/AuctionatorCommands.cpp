@@ -127,6 +127,8 @@ class AuctionatorCommands : public CommandScript
                     gAuctionator->logInfo("All sellers disabled");
                     return true;
                 }
+            } else if (commandString == "status") {
+                AuctionatorCommands::ShowStatus(handler);
             } else if (commandString == "help") {
                 AuctionatorCommands::ShowHelp(handler);
                 return true;
@@ -154,9 +156,34 @@ disable ...
 enable ...
 add ...
 expireall ...
+status
 help
             )");
             handler->SendSysMessage(helpString);
+        }
+
+        static void ShowStatus(ChatHandler* handler)
+        {
+            std::string statusString = "[Auctionator] Status:\n\n";
+
+            statusString += " Enabled: " + std::to_string(gAuctionator->config->isEnabled) + "\n\n";
+
+            statusString += " Horde:\n";
+            statusString += "  Enabled: " + std::to_string(gAuctionator->config->hordeSeller.enabled) + "\n";
+            statusString += "  Max Auctions: " + std::to_string(gAuctionator->config->hordeSeller.maxAuctions) + "\n";
+            statusString += "  Auctions: " + std::to_string(gAuctionator->GetAuctionHouse(AUCTIONHOUSE_HORDE)->Getcount()) + "\n";
+
+            statusString += " Alliance:\n";
+            statusString += "  Enabled: " + std::to_string(gAuctionator->config->allianceSeller.enabled) + "\n";
+            statusString += "  Max Auctions: " + std::to_string(gAuctionator->config->allianceSeller.maxAuctions) + "\n";
+            statusString += "  Auctions: " + std::to_string(gAuctionator->GetAuctionHouse(AUCTIONHOUSE_ALLIANCE)->Getcount()) + "\n";
+
+            statusString += " Neutral:\n";
+            statusString += "  Enabled: " + std::to_string(gAuctionator->config->neutralSeller.enabled) + "\n";
+            statusString += "  Max Auctions: " + std::to_string(gAuctionator->config->neutralSeller.maxAuctions) + "\n";
+            statusString += "  Auctions: " + std::to_string(gAuctionator->GetAuctionHouse(AUCTIONHOUSE_NEUTRAL)->Getcount()) + "\n";
+
+            handler->SendSysMessage(statusString);
         }
 };
 
