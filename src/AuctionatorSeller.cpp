@@ -30,9 +30,9 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
             , aicconf.stack_count
         FROM
             acore_world.mod_auctionator_itemclass_config aicconf
-            LEFT JOIN acore_world.item_template it ON 
-                aicconf.class = it.class 
-                AND aicconf.subclass = it.subclass 
+            LEFT JOIN acore_world.item_template it ON
+                aicconf.class = it.class
+                AND aicconf.subclass = it.subclass
                 -- skip BoP
                 AND it.bonding != 1
                 AND (
@@ -48,9 +48,9 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
                     count(ii.itemEntry) as itemCount
                     , ii.itemEntry AS itemEntry
                 FROM
-                    acore_characters.item_instance ii 
-                    INNER JOIN acore_characters.auctionhouse ah ON ii.guid = ah.itemguid 
-                    LEFT JOIN acore_world.item_template it ON ii.itemEntry = it.entry 
+                    acore_characters.item_instance ii
+                    INNER JOIN acore_characters.auctionhouse ah ON ii.guid = ah.itemguid
+                    LEFT JOIN acore_world.item_template it ON ii.itemEntry = it.entry
                 WHERE ah.houseId = {}
                 GROUP BY ii.itemEntry, it.name
             ) ic ON ic.itemEntry = it.entry
@@ -64,6 +64,7 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
             AND it.name NOT LIKE 'NPC %'
             -- filter out items where we are already at or above max_count for uniques in this class to limit dups
             AND (ic.itemCount IS NULL OR ic.itemCount < aicconf.max_count)
+            AND VerifiedBuild != 1
         ORDER BY RAND()
         LIMIT {}
         ;
