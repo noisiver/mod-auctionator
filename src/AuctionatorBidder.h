@@ -10,12 +10,16 @@ class AuctionatorBidder
         Auctionator* nator;
         uint32 auctionHouseId;
         AuctionHouseObject* ahMgr;
+        ObjectGuid buyerGuid;
 
     public:
         AuctionatorBidder(Auctionator* natorParam, uint32 auctionHouseIdParam);
         ~AuctionatorBidder();
         void SpendSomeCash();
-        AuctionEntry* GetAuctionForPurchase(std::vector<uint32> biddableAuctionIds);
+        AuctionEntry* GetAuctionForPurchase(std::vector<uint32>& biddableAuctionIds);
+
+        bool BidOnAuction(AuctionEntry* auction, Item* item, ItemTemplate const* itemTemplate);
+        bool BuyoutAuction(AuctionEntry* auction, Item* item, ItemTemplate const* itemTemplate);
  };
 
 #endif  //AUCTIONATORBIDDER_H
