@@ -11,12 +11,17 @@
 #include "AuctionatorConfig.h"
 #include "AuctionatorSeller.h"
 #include "AuctionatorBidder.h"
+#include "EventMap.h"
 #include <vector>
 
 Auctionator::Auctionator()
 {
     InitializeConfig(sConfigMgr);
     Initialize();
+
+    events = EventMap();
+
+    events.ScheduleEvent(1, 180);
 };
 
 Auctionator::~Auctionator()
@@ -277,7 +282,17 @@ void Auctionator::Update()
     }
 
     AuctionatorBidder HordeBidder = AuctionatorBidder(gAuctionator, static_cast<uint32>(AUCTIONHOUSE_HORDE));
-    HordeBidder.SpendSomeCash();
+    // HordeBidder.SpendSomeCash();
+    events.Update(60);
+
+    uint32 currentEvent = events.ExecuteEvent();
+    while (currentEvent != 0) {
+        gAuctionator->logInfo("Executing event: " + std::to_string(currentEvent));
+
+        events.ScheduleEvent(currentEvent, 180);
+
+        currentEvent = events.ExecuteEvent();
+    }
 }
 
 AuctionHouseObject* Auctionator::GetAuctionMgr(uint32 auctionHouseId)
