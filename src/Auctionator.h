@@ -14,6 +14,7 @@ class WorldSession;
 #include "AuctionHouseMgr.h"
 #include "Config.h"
 #include "EventMap.h"
+#include "AuctionatorEvents.h"
 
 struct AuctionatorItem
 {
@@ -45,7 +46,7 @@ class Auctionator
         AuctionHouseEntry const* AllianceAhEntry;
         AuctionHouseEntry const* NeutralAhEntry;
         WorldSession *session;
-        EventMap events;
+        AuctionatorEvents events;
 
     public:
         ~Auctionator();

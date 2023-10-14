@@ -11,6 +11,7 @@
 #include "AuctionatorConfig.h"
 #include "AuctionatorSeller.h"
 #include "AuctionatorBidder.h"
+#include "AuctionatorEvents.h"
 #include "EventMap.h"
 #include <vector>
 
@@ -19,9 +20,11 @@ Auctionator::Auctionator()
     InitializeConfig(sConfigMgr);
     Initialize();
 
-    events = EventMap();
-
-    events.ScheduleEvent(1, 180);
+    logInfo("Event init");
+    // events = AuctionatorEvents();
+    // events.InitializeEvents();
+    // events = EventMap();
+    // events.ScheduleEvent(1, 180);
 };
 
 Auctionator::~Auctionator()
@@ -211,7 +214,7 @@ void Auctionator::InitializeConfig(ConfigMgr* configMgr)
 */
 void Auctionator::Update()
 {
-    logDebug("Auctionator tick");
+    logInfo("- - - - - - - - - - - - - - - - - - - -");
 
     logInfo("Neutral count: " + std::to_string(NeutralAh->Getcount()));
     logInfo("Alliance count: " + std::to_string(AllianceAh->Getcount()));
@@ -283,16 +286,18 @@ void Auctionator::Update()
 
     AuctionatorBidder HordeBidder = AuctionatorBidder(gAuctionator, static_cast<uint32>(AUCTIONHOUSE_HORDE));
     // HordeBidder.SpendSomeCash();
-    events.Update(60);
 
-    uint32 currentEvent = events.ExecuteEvent();
-    while (currentEvent != 0) {
-        gAuctionator->logInfo("Executing event: " + std::to_string(currentEvent));
+    logInfo("UpdatingEvents");
+    events.Update(1);
 
-        events.ScheduleEvent(currentEvent, 180);
+    // uint32 currentEvent = events.ExecuteEvent();
+    // while (currentEvent != 0) {
+    //     gAuctionator->logInfo("Executing event: " + std::to_string(currentEvent));
 
-        currentEvent = events.ExecuteEvent();
-    }
+    //     events.ScheduleEvent(currentEvent, 180);
+
+    //     currentEvent = events.ExecuteEvent();
+    // }
 }
 
 AuctionHouseObject* Auctionator::GetAuctionMgr(uint32 auctionHouseId)
