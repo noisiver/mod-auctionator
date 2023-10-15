@@ -17,11 +17,14 @@
 
 Auctionator::Auctionator()
 {
+    SetLogPrefix("[Auctionator] ");
     InitializeConfig(sConfigMgr);
     Initialize();
 
     logInfo("Event init");
-    // events = AuctionatorEvents();
+    ObjectGuid buyerGuid = ObjectGuid::Create<HighGuid::Player>(config->characterGuid);
+    events = AuctionatorEvents();
+    events.SetPlayerGuid(buyerGuid);
     // events.InitializeEvents();
     // events = EventMap();
     // events.ScheduleEvent(1, 180);
@@ -284,7 +287,8 @@ void Auctionator::Update()
         logInfo("Neutral Seller Disabled");
     }
 
-    AuctionatorBidder HordeBidder = AuctionatorBidder(gAuctionator, static_cast<uint32>(AUCTIONHOUSE_HORDE));
+    // ObjectGuid buyerGuid = ObjectGuid::Create<HighGuid::Player>(config->characterGuid);
+    // AuctionatorBidder HordeBidder = AuctionatorBidder(static_cast<uint32>(AUCTIONHOUSE_HORDE));
     // HordeBidder.SpendSomeCash();
 
     logInfo("UpdatingEvents");
@@ -348,16 +352,4 @@ void Auctionator::ExpireAllAuctions(uint32 houseId)
     }
 
     logDebug("House auctions expired: " + std::to_string(houseId));
-}
-
-void Auctionator::logInfo(std::string message) {
-    LOG_INFO("auctionator", "[Auctionator]: " + message);
-}
-
-void Auctionator::logDebug(std::string message) {
-    LOG_DEBUG("auctionator", "[Auctionator]: " + message);
-}
-
-void Auctionator::logTrace(std::string message) {
-    LOG_TRACE("auctionator", "[Auctionator]: " + message);
 }

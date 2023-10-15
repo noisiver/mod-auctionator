@@ -3,23 +3,24 @@
 #define AUCTIONATORBIDDER_H
 
 #include "Auctionator.h"
+#include "AuctionatorBase.h"
+#include "ObjectMgr.h"
 
-class AuctionatorBidder
+class AuctionatorBidder : AuctionatorBase
 {
     private:
-        Auctionator* nator;
         uint32 auctionHouseId;
         AuctionHouseObject* ahMgr;
         ObjectGuid buyerGuid;
 
     public:
-        AuctionatorBidder(Auctionator* natorParam, uint32 auctionHouseIdParam);
+        AuctionatorBidder(uint32 auctionHouseIdParam, ObjectGuid buyer);
         ~AuctionatorBidder();
         void SpendSomeCash();
         AuctionEntry* GetAuctionForPurchase(std::vector<uint32>& biddableAuctionIds);
 
-        bool BidOnAuction(AuctionEntry* auction, Item* item, ItemTemplate const* itemTemplate);
-        bool BuyoutAuction(AuctionEntry* auction, Item* item, ItemTemplate const* itemTemplate);
+        bool BidOnAuction(AuctionEntry* auction, ItemTemplate const* itemTemplate);
+        bool BuyoutAuction(AuctionEntry* auction, ItemTemplate const* itemTemplate);
  };
 
 #endif  //AUCTIONATORBIDDER_H
