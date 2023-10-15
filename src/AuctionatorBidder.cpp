@@ -20,9 +20,9 @@ void AuctionatorBidder::SpendSomeCash()
 {
     uint32 auctionatorPlayerGuid = buyerGuid.GetRawValue();
 
-    std::string query = "SELECT id FROM auctionhouse WHERE itemowner <> {}; ";
+    std::string query = "SELECT id FROM auctionhouse WHERE itemowner <> {} AND houseid = {}; ";
 
-    QueryResult result = CharacterDatabase.Query(query, auctionatorPlayerGuid);
+    QueryResult result = CharacterDatabase.Query(query, auctionatorPlayerGuid, auctionHouseId);
 
     if (!result) {
         logInfo("Can't see player auctions, moving on.");
@@ -53,7 +53,7 @@ void AuctionatorBidder::SpendSomeCash()
             return;
         }
 
-        Item *item = sAuctionMgr->GetAItem(auction->item_guid);
+        // Item *item = sAuctionMgr->GetAItem(auction->item_guid);
         ItemTemplate const* itemTemplate = sObjectMgr->GetItemTemplate(auction->item_template);
 
         logInfo("Considering auction: "
@@ -73,9 +73,9 @@ void AuctionatorBidder::SpendSomeCash()
 
 
 
-        // if (success) {
+        if (success) {
             purchasePerCycle--;
-        // }
+        }
     }
 
 }
