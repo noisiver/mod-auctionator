@@ -131,16 +131,18 @@ bool AuctionatorBidder::BidOnAuction(AuctionEntry* auction, ItemTemplate const* 
         currentPrice = auction->startbid;
     }
 
-    if (currentPrice > itemTemplate->BuyPrice) {
+    uint32 buyPrice = CalculateBuyPrice(auction, itemTemplate);
+
+    if (currentPrice > buyPrice) {
         logInfo("Skipping auction ("
             + std::to_string(auction->Id) + "), price of "
             + std::to_string(currentPrice) + " is higher than template price of ("
-            + std::to_string(itemTemplate->BuyPrice) + ")"
+            + std::to_string(buyPrice) + ")"
         );
         return false;
     }
 
-    uint32 bidPrice = currentPrice + (itemTemplate->BuyPrice - currentPrice) / 2;
+    uint32 bidPrice = currentPrice + (buyPrice - currentPrice) / 2;
 
     auction->bidder = buyerGuid;
     auction->bid = bidPrice;
@@ -170,10 +172,12 @@ bool AuctionatorBidder::BidOnAuction(AuctionEntry* auction, ItemTemplate const* 
 
 bool AuctionatorBidder::BuyoutAuction(AuctionEntry* auction, ItemTemplate const* itemTemplate)
 {
-    if (auction->buyout > itemTemplate->BuyPrice) {
+    uint32 buyPrice = CalculateBuyPrice(auction, itemTemplate);
+
+    if (auction->buyout > buyPrice) {
         logInfo("Skipping buyout, price ("
             + std::to_string(auction->buyout) +") is higher than template buyprice ("
-            + std::to_string(itemTemplate->BuyPrice) +")");
+            + std::to_string(buyPrice) +")");
         return false;
     }
 
@@ -186,7 +190,8 @@ bool AuctionatorBidder::BuyoutAuction(AuctionEntry* auction, ItemTemplate const*
 
     logInfo("Purchased auction of "
         + itemTemplate->Name1 + " ["
-        + std::to_string(auction->Id) + "] for "
+        + std::to_string(auction->Id) + "]"
+        + "x" + std::to_string(auction->itemCount) + " for "
         + std::to_string(auction->buyout) + " copper."
     );
 
@@ -213,4 +218,14 @@ uint32 AuctionatorBidder::GetAuctionsPerCycle()
         default:
             return 0;
     }
+}
+
+uint32 AuctionatorBidder::CalculateBuyPrice(AuctionEntry* auction, ItemTemplate const* item)
+{
+    uint32 stackSize = 1;
+    if (item->GetMaxStackSize() > 1 && auction->itemCount > 1) {
+        stackSize = auction->itemCount;
+    }
+
+    return stackSize * item->BuyPrice;
 }

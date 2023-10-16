@@ -24,6 +24,7 @@ class AuctionatorBidder : AuctionatorBase
 
         bool BidOnAuction(AuctionEntry* auction, ItemTemplate const* itemTemplate);
         bool BuyoutAuction(AuctionEntry* auction, ItemTemplate const* itemTemplate);
+        uint32 CalculateBuyPrice(AuctionEntry* auction, ItemTemplate const* item);
  };
 
 #endif  //AUCTIONATORBIDDER_H
