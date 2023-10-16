@@ -184,16 +184,16 @@ bool AuctionatorBidder::BuyoutAuction(AuctionEntry* auction, ItemTemplate const*
     sAuctionMgr->SendAuctionSuccessfulMail(auction, trans);
     auction->DeleteFromDB(trans);
 
-    sAuctionMgr->RemoveAItem(auction->item_guid);
-    ahMgr->RemoveAuction(auction);
-
-    CharacterDatabase.CommitTransaction(trans);
-
     logInfo("Purchased auction of "
         + itemTemplate->Name1 + " ("
         + std::to_string(auction->Id) + ") for "
         + std::to_string(auction->buyout) + " copper."
     );
+
+    sAuctionMgr->RemoveAItem(auction->item_guid);
+    ahMgr->RemoveAuction(auction);
+
+    CharacterDatabase.CommitTransaction(trans);
 
     return true;
 }
