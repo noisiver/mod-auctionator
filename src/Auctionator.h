@@ -13,6 +13,9 @@ class WorldSession;
 #include "AuctionatorConfig.h"
 #include "AuctionHouseMgr.h"
 #include "Config.h"
+#include "EventMap.h"
+#include "AuctionatorEvents.h"
+#include "AuctionatorBase.h"
 
 struct AuctionatorItem
 {
@@ -33,7 +36,7 @@ struct AuctionatorItem
         quantity(1),
         stackSize(1) {}
 };
-class Auctionator
+class Auctionator : public AuctionatorBase
 {
     private:
         Auctionator();
@@ -44,6 +47,7 @@ class Auctionator
         AuctionHouseEntry const* AllianceAhEntry;
         AuctionHouseEntry const* NeutralAhEntry;
         WorldSession *session;
+        AuctionatorEvents events;
 
     public:
         ~Auctionator();
@@ -54,9 +58,6 @@ class Auctionator
         void Initialize();
         void InitializeConfig(ConfigMgr* configMgr);
         AuctionatorConfig *config;
-        void logInfo(std::string message);
-        void logDebug(std::string message);
-        void logTrace(std::string message);
         void Update();
 
         AuctionHouseObject *GetAuctionMgr(uint32 auctionHouseId);

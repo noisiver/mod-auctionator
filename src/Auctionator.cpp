@@ -10,12 +10,24 @@
 #include "Player.h"
 #include "AuctionatorConfig.h"
 #include "AuctionatorSeller.h"
+#include "AuctionatorBidder.h"
+#include "AuctionatorEvents.h"
+#include "EventMap.h"
 #include <vector>
 
 Auctionator::Auctionator()
 {
+    SetLogPrefix("[Auctionator] ");
     InitializeConfig(sConfigMgr);
     Initialize();
+
+    logInfo("Event init");
+    ObjectGuid buyerGuid = ObjectGuid::Create<HighGuid::Player>(config->characterGuid);
+    events = AuctionatorEvents(config);
+    events.SetPlayerGuid(buyerGuid);
+    // events.InitializeEvents();
+    // events = EventMap();
+    // events.ScheduleEvent(1, 180);
 };
 
 Auctionator::~Auctionator()
@@ -91,12 +103,12 @@ void Auctionator::CreateAuction(AuctionatorItem newItem, uint32 houseId)
     GetAuctionHouse(houseId)->AddAuction(auctionEntry);
 
     //
-    // Save your AuctionHouseEntry object to the 
+    // Save your AuctionHouseEntry object to the
     // `acore_characters`.`auctionhouse` table.
     //
     logTrace("save auction entry");
     auctionEntry->SaveToDB(trans);
- 
+
     logTrace("commit character transaction");
     CharacterDatabase.CommitTransaction(trans);
 
@@ -106,7 +118,7 @@ void Auctionator::CreateAuction(AuctionatorItem newItem, uint32 houseId)
 /**
  * Use this to get access to the AuctionHouseEntry object pointer
  * for a specific auction house.
- * 
+ *
  * Ultimately this is just a global singleton.
 */
 AuctionHouseEntry const *Auctionator::GetAuctionHouseEntry(uint32 houseId)
@@ -124,9 +136,9 @@ AuctionHouseEntry const *Auctionator::GetAuctionHouseEntry(uint32 houseId)
 }
 
 /**
- * Use this to get access to the AuctionHouseObject pointer for a 
+ * Use this to get access to the AuctionHouseObject pointer for a
  * specific auction house.
- * 
+ *
  * Ultimately this is just a global singleton.
 */
 AuctionHouseObject *Auctionator::GetAuctionHouse(uint32 houseId) {
@@ -158,7 +170,7 @@ void Auctionator::Initialize()
     WorldSession _session(
         config->characterId,
         std::move(accountName),
-        nullptr, 
+        nullptr,
         SEC_GAMEMASTER,
         sWorld->getIntConfig(CONFIG_EXPANSION),
         0,
@@ -176,7 +188,7 @@ void Auctionator::InitializeConfig(ConfigMgr* configMgr)
 {
     logInfo("Initializing Auctionator Config");
 
-    config = new AuctionatorConfig(AUCTIONHOUSE_HORDE);
+    config = new AuctionatorConfig();
     config->isEnabled = configMgr->GetOption<bool>("Auctionator.Enabled", false);
     logInfo("config->isEnabled: "
         + std::to_string(config->isEnabled));
@@ -197,6 +209,19 @@ void Auctionator::InitializeConfig(ConfigMgr* configMgr)
     config->allianceSeller.maxAuctions = configMgr->GetOption<uint32>("Auctionator.AllianceSeller.MaxAuctions", 50);
     config->neutralSeller.maxAuctions = configMgr->GetOption<uint32>("Auctionator.NeutralSeller.MaxAuctions", 50);
 
+    // Load our bidder configurations
+    config->allianceBidder.enabled = configMgr->GetOption<uint32>("Auctionator.AllianceBidder.Enabled", 0);
+    config->allianceBidder.cycleMinutes = configMgr->GetOption<uint32>("Auctionator.AllianceBidder.CycleMinutes", 30);
+    config->allianceBidder.maxPerCycle = configMgr->GetOption<uint32>("Auctionator.AllianceBidder.MaxPerCycle", 1);
+
+    config->hordeBidder.enabled = configMgr->GetOption<uint32>("Auctionator.HordeBidder.Enabled", 0);
+    config->hordeBidder.cycleMinutes = configMgr->GetOption<uint32>("Auctionator.HordeBidder.CycleMinutes", 30);
+    config->hordeBidder.maxPerCycle = configMgr->GetOption<uint32>("Auctionator.HordeBidder.MaxPerCycle", 1);
+
+    config->neutralBidder.enabled = configMgr->GetOption<uint32>("Auctionator.NeutralBidder.Enabled", 0);
+    config->neutralBidder.cycleMinutes = configMgr->GetOption<uint32>("Auctionator.NeutralBidder.CycleMinutes", 30);
+    config->neutralBidder.maxPerCycle = configMgr->GetOption<uint32>("Auctionator.NeutralBidder.MaxPerCycle", 1);
+
     logInfo("Auctionator config initialized");
 }
 
@@ -205,7 +230,7 @@ void Auctionator::InitializeConfig(ConfigMgr* configMgr)
 */
 void Auctionator::Update()
 {
-    logDebug("Auctionator tick");
+    logInfo("- - - - - - - - - - - - - - - - - - - -");
 
     logInfo("Neutral count: " + std::to_string(NeutralAh->Getcount()));
     logInfo("Alliance count: " + std::to_string(AllianceAh->Getcount()));
@@ -213,7 +238,7 @@ void Auctionator::Update()
 
 
     if (config->allianceSeller.enabled) {
-        AuctionatorSeller sellerAlliance = 
+        AuctionatorSeller sellerAlliance =
             AuctionatorSeller(gAuctionator, static_cast<uint32>(AUCTIONHOUSE_ALLIANCE));
 
         uint32 auctionCountAlliance = AllianceAh->Getcount();
@@ -234,7 +259,7 @@ void Auctionator::Update()
     }
 
     if (config->hordeSeller.enabled) {
-        AuctionatorSeller sellerHorde = 
+        AuctionatorSeller sellerHorde =
             AuctionatorSeller(gAuctionator, static_cast<uint32>(AUCTIONHOUSE_HORDE));
 
         uint32 auctionCountHorde = HordeAh->Getcount();
@@ -255,7 +280,7 @@ void Auctionator::Update()
     }
 
     if (config->neutralSeller.enabled) {
-        AuctionatorSeller sellerNeutral = 
+        AuctionatorSeller sellerNeutral =
             AuctionatorSeller(gAuctionator, static_cast<uint32>(AUCTIONHOUSE_NEUTRAL));
 
         uint32 auctionCountNeutral = NeutralAh->Getcount();
@@ -274,6 +299,11 @@ void Auctionator::Update()
     } else {
         logInfo("Neutral Seller Disabled");
     }
+
+    logInfo("UpdatingEvents");
+    events.Update(1);
+
+    logInfo("^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^");
 }
 
 AuctionHouseObject* Auctionator::GetAuctionMgr(uint32 auctionHouseId)
@@ -297,7 +327,7 @@ void Auctionator::ExpireAllAuctions(uint32 houseId)
         houseId != AUCTIONHOUSE_HORDE &&
         houseId != AUCTIONHOUSE_NEUTRAL
     ) {
-        logDebug("Invalid houseId: " + std::to_string(houseId)); 
+        logDebug("Invalid houseId: " + std::to_string(houseId));
         return;
     }
 
@@ -313,7 +343,7 @@ void Auctionator::ExpireAllAuctions(uint32 houseId)
     for (
         AuctionHouseObject::AuctionEntryMap::iterator itr,
         iter = ah->GetAuctionsBegin();
-        iter != ah->GetAuctionsEnd(); 
+        iter != ah->GetAuctionsEnd();
         )
     {
         itr = iter++;
@@ -324,16 +354,4 @@ void Auctionator::ExpireAllAuctions(uint32 houseId)
     }
 
     logDebug("House auctions expired: " + std::to_string(houseId));
-}
-
-void Auctionator::logInfo(std::string message) {
-    LOG_INFO("auctionator", "[Auctionator]: " + message); 
-}
-
-void Auctionator::logDebug(std::string message) {
-    LOG_DEBUG("auctionator", "[Auctionator]: " + message); 
-}
-
-void Auctionator::logTrace(std::string message) {
-    LOG_TRACE("auctionator", "[Auctionator]: " + message);
 }
