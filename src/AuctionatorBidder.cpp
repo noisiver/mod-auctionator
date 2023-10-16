@@ -134,8 +134,8 @@ bool AuctionatorBidder::BidOnAuction(AuctionEntry* auction, ItemTemplate const* 
     if (currentPrice > itemTemplate->BuyPrice) {
         logInfo("Skipping auction ("
             + std::to_string(auction->Id) + "), price of "
-            + std::to_string(currentPrice) + " is higher than template price of "
-            + std::to_string(itemTemplate->BuyPrice)
+            + std::to_string(currentPrice) + " is higher than template price of ("
+            + std::to_string(itemTemplate->BuyPrice) + ")"
         );
         return false;
     }
@@ -160,8 +160,8 @@ bool AuctionatorBidder::BidOnAuction(AuctionEntry* auction, ItemTemplate const* 
     );
 
     logInfo("Bid on auction of "
-        + itemTemplate->Name1 + " ("
-        + std::to_string(auction->Id) + ") of "
+        + itemTemplate->Name1 + " ["
+        + std::to_string(auction->Id) + "] of "
         + std::to_string(bidPrice) + " copper."
     );
 
@@ -172,7 +172,7 @@ bool AuctionatorBidder::BuyoutAuction(AuctionEntry* auction, ItemTemplate const*
 {
     if (auction->buyout > itemTemplate->BuyPrice) {
         logInfo("Skipping buyout, price ("
-            + std::to_string(auction->buyout) +") is higher than template buyprice "
+            + std::to_string(auction->buyout) +") is higher than template buyprice ("
             + std::to_string(itemTemplate->BuyPrice) +")");
         return false;
     }
@@ -185,8 +185,8 @@ bool AuctionatorBidder::BuyoutAuction(AuctionEntry* auction, ItemTemplate const*
     auction->DeleteFromDB(trans);
 
     logInfo("Purchased auction of "
-        + itemTemplate->Name1 + " ("
-        + std::to_string(auction->Id) + ") for "
+        + itemTemplate->Name1 + " ["
+        + std::to_string(auction->Id) + "] for "
         + std::to_string(auction->buyout) + " copper."
     );
 

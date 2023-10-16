@@ -300,21 +300,10 @@ void Auctionator::Update()
         logInfo("Neutral Seller Disabled");
     }
 
-    // ObjectGuid buyerGuid = ObjectGuid::Create<HighGuid::Player>(config->characterGuid);
-    // AuctionatorBidder HordeBidder = AuctionatorBidder(static_cast<uint32>(AUCTIONHOUSE_HORDE));
-    // HordeBidder.SpendSomeCash();
-
     logInfo("UpdatingEvents");
     events.Update(1);
 
-    // uint32 currentEvent = events.ExecuteEvent();
-    // while (currentEvent != 0) {
-    //     gAuctionator->logInfo("Executing event: " + std::to_string(currentEvent));
-
-    //     events.ScheduleEvent(currentEvent, 180);
-
-    //     currentEvent = events.ExecuteEvent();
-    // }
+    logInfo("^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^");
 }
 
 AuctionHouseObject* Auctionator::GetAuctionMgr(uint32 auctionHouseId)
