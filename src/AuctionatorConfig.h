@@ -11,40 +11,32 @@ struct AuctionatorHouseConfig
         uint32 maxAuctions;
 };
 
+struct AuctionatorBidderConfig
+{
+    public:
+        uint32 enabled;
+        uint32 cycleMinutes;
+        uint32 maxPerCycle;
+};
+
 class AuctionatorConfig
 {
     private:
 
     public:
-        AuctionatorConfig();
+        AuctionatorConfig() {};
         bool isEnabled;
         uint32 characterId;
         uint32 characterGuid;
         uint32 auctionHouseId;
-        uint32 internalHouseId;
 
         AuctionatorHouseConfig hordeSeller;
         AuctionatorHouseConfig allianceSeller;
         AuctionatorHouseConfig neutralSeller;
 
-        AuctionatorConfig(uint32 id)
-        {
-            auctionHouseId = id;
-            switch(auctionHouseId)
-            {
-                case 2:
-                    internalHouseId = 55;
-                    break;
-                case 6:
-                    internalHouseId = 29;
-                    break;
-                case 7:
-                default:
-                    internalHouseId = 120;
-                    break;
-            }
-        }
-
+        AuctionatorBidderConfig allianceBidder;
+        AuctionatorBidderConfig hordeBidder;
+        AuctionatorBidderConfig neutralBidder;
 };
 
 #endif

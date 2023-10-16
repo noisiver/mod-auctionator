@@ -1,14 +1,17 @@
 #include "AuctionatorBidder.h"
 #include "Auctionator.h"
 #include "ObjectMgr.h"
+#include <random>
 
 
-AuctionatorBidder::AuctionatorBidder(uint32 auctionHouseIdParam, ObjectGuid buyer)
+AuctionatorBidder::AuctionatorBidder(uint32 auctionHouseIdParam, ObjectGuid buyer, AuctionatorConfig* auctionatorConfig)
 {
-    auctionHouseId = auctionHouseIdParam;
-    ahMgr = sAuctionMgr->GetAuctionsMapByHouseId(auctionHouseId);
-    buyerGuid = buyer;
     SetLogPrefix("[AuctionatorBidder] ");
+    auctionHouseId = auctionHouseIdParam;
+    buyerGuid = buyer;
+    ahMgr = sAuctionMgr->GetAuctionsMapByHouseId(auctionHouseId);
+    config = auctionatorConfig;
+    bidOnOwn = 1;
 }
 
 AuctionatorBidder::~AuctionatorBidder()
@@ -22,7 +25,15 @@ void AuctionatorBidder::SpendSomeCash()
 
     std::string query = "SELECT id FROM auctionhouse WHERE itemowner <> {} AND houseid = {}; ";
 
-    QueryResult result = CharacterDatabase.Query(query, auctionatorPlayerGuid, auctionHouseId);
+    // for testing we may want to bid on our own auctions.
+    // if we do we set the ownerToSkip to 0 so we will pick
+    // up all auctions including our own.
+    uint32 ownerToSkip = auctionatorPlayerGuid;
+    if (bidOnOwn) {
+        ownerToSkip = 0;
+    }
+
+    QueryResult result = CharacterDatabase.Query(query, ownerToSkip, auctionHouseId);
 
     if (!result) {
         logInfo("Can't see player auctions, moving on.");
@@ -39,9 +50,17 @@ void AuctionatorBidder::SpendSomeCash()
         biddableAuctionIds.push_back(result->Fetch()->Get<uint32>());
     } while(result->NextRow());
 
+    // shuffle our vector to try to inject some randomness
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::shuffle(
+        biddableAuctionIds.begin(),
+        biddableAuctionIds.end(),
+        std::default_random_engine(seed)
+    );
+
     logInfo("Found " + std::to_string(biddableAuctionIds.size()) + " biddable auctions");
 
-    uint32 purchasePerCycle = 5;
+    uint32 purchasePerCycle = GetAuctionsPerCycle();
     uint32 counter = 0;
     uint32 total = biddableAuctionIds.size();
 
@@ -58,8 +77,9 @@ void AuctionatorBidder::SpendSomeCash()
 
         logInfo("Considering auction: "
             + itemTemplate->Name1
-            + "(" + std::to_string(auction->Id) + ")"
-            + ", " + std::to_string(counter) + " of "
+            + " [AuctionId: " + std::to_string(auction->Id) + "]"
+            + " [ItemId: " + std::to_string(itemTemplate->ItemId) + "]"
+            + " <> " + std::to_string(counter) + " of "
             + std::to_string(total)
         );
 
@@ -71,10 +91,9 @@ void AuctionatorBidder::SpendSomeCash()
             success = BidOnAuction(auction, itemTemplate);
         }
 
-
-
         if (success) {
             purchasePerCycle--;
+            logInfo("Purchase made, remaining: " + std::to_string(purchasePerCycle));
         }
     }
 
@@ -152,7 +171,9 @@ bool AuctionatorBidder::BidOnAuction(AuctionEntry* auction, ItemTemplate const* 
 bool AuctionatorBidder::BuyoutAuction(AuctionEntry* auction, ItemTemplate const* itemTemplate)
 {
     if (auction->buyout > itemTemplate->BuyPrice) {
-        logInfo("Skipping buyout, price is higher than template buyprice");
+        logInfo("Skipping buyout, price ("
+            + std::to_string(auction->buyout) +") is higher than template buyprice "
+            + std::to_string(itemTemplate->BuyPrice) +")");
         return false;
     }
 
@@ -175,4 +196,21 @@ bool AuctionatorBidder::BuyoutAuction(AuctionEntry* auction, ItemTemplate const*
     );
 
     return true;
+}
+
+uint32 AuctionatorBidder::GetAuctionsPerCycle()
+{
+    switch(auctionHouseId) {
+        case AUCTIONHOUSE_ALLIANCE:
+            return config->allianceBidder.maxPerCycle;
+            break;
+        case AUCTIONHOUSE_HORDE:
+            return config->hordeBidder.maxPerCycle;
+            break;
+        case AUCTIONHOUSE_NEUTRAL:
+            return config->neutralBidder.maxPerCycle;
+            break;
+        default:
+            return 0;
+    }
 }

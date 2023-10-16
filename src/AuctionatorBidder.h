@@ -12,9 +12,12 @@ class AuctionatorBidder : AuctionatorBase
         uint32 auctionHouseId;
         AuctionHouseObject* ahMgr;
         ObjectGuid buyerGuid;
+        AuctionatorConfig* config;
+        uint32 bidOnOwn = 0;
+        uint32 GetAuctionsPerCycle();
 
     public:
-        AuctionatorBidder(uint32 auctionHouseIdParam, ObjectGuid buyer);
+        AuctionatorBidder(uint32 auctionHouseIdParam, ObjectGuid buyer, AuctionatorConfig* auctionatorConfig);
         ~AuctionatorBidder();
         void SpendSomeCash();
         AuctionEntry* GetAuctionForPurchase(std::vector<uint32>& biddableAuctionIds);

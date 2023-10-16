@@ -23,7 +23,7 @@ Auctionator::Auctionator()
 
     logInfo("Event init");
     ObjectGuid buyerGuid = ObjectGuid::Create<HighGuid::Player>(config->characterGuid);
-    events = AuctionatorEvents();
+    events = AuctionatorEvents(config);
     events.SetPlayerGuid(buyerGuid);
     // events.InitializeEvents();
     // events = EventMap();
@@ -188,7 +188,7 @@ void Auctionator::InitializeConfig(ConfigMgr* configMgr)
 {
     logInfo("Initializing Auctionator Config");
 
-    config = new AuctionatorConfig(AUCTIONHOUSE_HORDE);
+    config = new AuctionatorConfig();
     config->isEnabled = configMgr->GetOption<bool>("Auctionator.Enabled", false);
     logInfo("config->isEnabled: "
         + std::to_string(config->isEnabled));
@@ -208,6 +208,19 @@ void Auctionator::InitializeConfig(ConfigMgr* configMgr)
     config->hordeSeller.maxAuctions = configMgr->GetOption<uint32>("Auctionator.HordeSeller.MaxAuctions", 50);
     config->allianceSeller.maxAuctions = configMgr->GetOption<uint32>("Auctionator.AllianceSeller.MaxAuctions", 50);
     config->neutralSeller.maxAuctions = configMgr->GetOption<uint32>("Auctionator.NeutralSeller.MaxAuctions", 50);
+
+    // Load our bidder configurations
+    config->allianceBidder.enabled = configMgr->GetOption<uint32>("Auctionator.AllianceBidder.Enabled", 0);
+    config->allianceBidder.cycleMinutes = configMgr->GetOption<uint32>("Auctionator.AllianceBidder.CycleMinutes", 30);
+    config->allianceBidder.maxPerCycle = configMgr->GetOption<uint32>("Auctionator.AllianceBidder.MaxPerCycle", 1);
+
+    config->hordeBidder.enabled = configMgr->GetOption<uint32>("Auctionator.HordeBidder.Enabled", 0);
+    config->hordeBidder.cycleMinutes = configMgr->GetOption<uint32>("Auctionator.HordeBidder.CycleMinutes", 30);
+    config->hordeBidder.maxPerCycle = configMgr->GetOption<uint32>("Auctionator.HordeBidder.MaxPerCycle", 1);
+
+    config->neutralBidder.enabled = configMgr->GetOption<uint32>("Auctionator.NeutralBidder.Enabled", 0);
+    config->neutralBidder.cycleMinutes = configMgr->GetOption<uint32>("Auctionator.NeutralBidder.CycleMinutes", 30);
+    config->neutralBidder.maxPerCycle = configMgr->GetOption<uint32>("Auctionator.NeutralBidder.MaxPerCycle", 1);
 
     logInfo("Auctionator config initialized");
 }

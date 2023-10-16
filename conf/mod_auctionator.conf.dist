@@ -5,10 +5,10 @@
 [worldserver]
 
 ########################################
-# My module configuration
+# Auctionator configuration
 ########################################
 #
-#    MyModule.Enable
+#    Auctionator.Enable
 #        Description: Enable my module and print "Hello World" message at server start
 #        Default:     0 - Disabled
 #                     1 - Enabled
@@ -17,19 +17,38 @@
 Auctionator.Enabled = 1
 
 # the top level account id
+# this is not actually used methinks
 Auctionator.CharacterId = 2
 
 # the character id
 Auctionator.CharacterGuid = 2
 
-Auctionator.HordeSeller.Enabled = 0
-Auctionator.HordeSeller.MaxAuctions = 5000
-
+########################################
+# Seller configuration
+########################################
 Auctionator.AllianceSeller.Enabled = 0
 Auctionator.AllianceSeller.MaxAuctions = 5000
 
+Auctionator.HordeSeller.Enabled = 0
+Auctionator.HordeSeller.MaxAuctions = 5000
+
 Auctionator.NeutralSeller.Enabled = 0
 Auctionator.NeutralSeller.MaxAuctions = 5000
+
+########################################
+# Bidder/Buyer configuration
+########################################
+Auctionator.AllianceBidder.Enabled = 1
+Auctionator.AllianceBidder.CycleMinutes = 30
+Auctionator.AllianceBidder.MaxPerCycle = 2
+
+Auctionator.HordeBidder.Enabled = 1
+Auctionator.HordeBidder.CycleMinutes = 30
+Auctionator.HordeBidder.MaxPerCycle = 2
+
+Auctionator.NeutralBidder.Enabled = 1
+Auctionator.NeutralBidder.CycleMinutes = 30
+Auctionator.NeutralBidder.MaxPerCycle = 2
 
 
 ###################################################################################################

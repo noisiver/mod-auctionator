@@ -4,11 +4,12 @@
 #include "Log.h"
 #include <functional>
 
-AuctionatorEvents::AuctionatorEvents()
+AuctionatorEvents::AuctionatorEvents(AuctionatorConfig* auctionatorConfig)
 {
     SetLogPrefix("[AuctionatorEvents] ");
     events = EventMap();
     InitializeEvents();
+    config = auctionatorConfig;
 }
 
 AuctionatorEvents::~AuctionatorEvents()
@@ -38,11 +39,17 @@ void AuctionatorEvents::InitializeEvents()
     //
 
     // AllianceBidder
-    events.ScheduleEvent(1, 3);
+    if (config->allianceBidder.enabled) {
+        events.ScheduleEvent(1, config->allianceBidder.cycleMinutes);
+    }
     // HordeBidder
-    events.ScheduleEvent(2, 2);
+    if (config->hordeBidder.enabled) {
+        events.ScheduleEvent(2, config->hordeBidder.cycleMinutes);
+    }
     // NeutralBidder
-    events.ScheduleEvent(3, 1);
+    if (config->neutralBidder.enabled) {
+        events.ScheduleEvent(3, config->neutralBidder.cycleMinutes);
+    }
 }
 
 void AuctionatorEvents::ExecuteEvents()
@@ -54,22 +61,28 @@ void AuctionatorEvents::ExecuteEvents()
 
         if (eventToFunction[currentEvent] != "") {
             try {
+                // this shit stopped working and I have no idea why
+                // so until i revisit we will do it the hard way below.
                 // eventFunctions[eventToFunction[currentEvent]]();
-                // if (eventToFunction[currentEvent] == "NeutralBidder") {
-                //     EventNeutralBidder();
-                // }
+
                 switch(currentEvent) {
                     case 1:
                         EventAllianceBidder();
-                        events.ScheduleEvent(currentEvent, 3);
+                        if (config->allianceBidder.enabled) {
+                            events.ScheduleEvent(currentEvent, config->allianceBidder.cycleMinutes);
+                        }
                         break;
                     case 2:
                         EventHordeBidder();
-                        events.ScheduleEvent(currentEvent, 2);
+                        if (config->hordeBidder.enabled) {
+                            events.ScheduleEvent(currentEvent, config->hordeBidder.cycleMinutes);
+                        }
                         break;
                     case 3:
                         EventNeutralBidder();
-                        events.ScheduleEvent(currentEvent, 1);
+                        if (config->neutralBidder.enabled) {
+                            events.ScheduleEvent(currentEvent, config->neutralBidder.cycleMinutes);
+                        }
                         break;
                 }
             } catch(const std::exception& e) {
@@ -96,20 +109,20 @@ void AuctionatorEvents::SetPlayerGuid(ObjectGuid playerGuid)
 void AuctionatorEvents::EventAllianceBidder()
 {
     logInfo("Starting Alliance Bidder");
-    AuctionatorBidder bidder = AuctionatorBidder(AUCTIONHOUSE_ALLIANCE, auctionatorGuid);
+    AuctionatorBidder bidder = AuctionatorBidder(AUCTIONHOUSE_ALLIANCE, auctionatorGuid, config);
     bidder.SpendSomeCash();
 }
 
 void AuctionatorEvents::EventHordeBidder()
 {
     logInfo("Starting Horde Bidder");
-    AuctionatorBidder bidder = AuctionatorBidder(AUCTIONHOUSE_HORDE, auctionatorGuid);
+    AuctionatorBidder bidder = AuctionatorBidder(AUCTIONHOUSE_HORDE, auctionatorGuid, config);
     bidder.SpendSomeCash();
 }
 
 void AuctionatorEvents::EventNeutralBidder()
 {
     logInfo("Starting Neutral Bidder");
-    AuctionatorBidder bidder = AuctionatorBidder(AUCTIONHOUSE_NEUTRAL, auctionatorGuid);
+    AuctionatorBidder bidder = AuctionatorBidder(AUCTIONHOUSE_NEUTRAL, auctionatorGuid, config);
     bidder.SpendSomeCash();
 }

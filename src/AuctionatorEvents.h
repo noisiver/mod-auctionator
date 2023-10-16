@@ -3,6 +3,7 @@
 #define AUCTIONATOR_EVENTS_H
 
 #include "AuctionatorBase.h"
+#include "AuctionatorConfig.h"
 #include "EventMap.h"
 #include "ObjectMgr.h"
 #include <unordered_map>
@@ -17,9 +18,11 @@ class AuctionatorEvents : public AuctionatorBase
         EventMap events;
         std::unordered_map<std::string, std::function<void()>> eventFunctions;
         std::unordered_map<uint32, std::string> eventToFunction;
+        AuctionatorConfig* config;
 
     public:
-        AuctionatorEvents();
+        AuctionatorEvents() {};
+        AuctionatorEvents(AuctionatorConfig* auctionatorConfig);
         ~AuctionatorEvents();
         void InitializeEvents();
         void ExecuteEvents();
