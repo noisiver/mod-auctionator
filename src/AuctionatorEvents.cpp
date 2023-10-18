@@ -8,8 +8,8 @@ AuctionatorEvents::AuctionatorEvents(AuctionatorConfig* auctionatorConfig)
 {
     SetLogPrefix("[AuctionatorEvents] ");
     events = EventMap();
-    InitializeEvents();
     config = auctionatorConfig;
+    InitializeEvents();
 }
 
 AuctionatorEvents::~AuctionatorEvents()
