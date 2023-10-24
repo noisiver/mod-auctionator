@@ -11,7 +11,7 @@ AuctionatorBidder::AuctionatorBidder(uint32 auctionHouseIdParam, ObjectGuid buye
     buyerGuid = buyer;
     ahMgr = sAuctionMgr->GetAuctionsMapByHouseId(auctionHouseId);
     config = auctionatorConfig;
-    bidOnOwn = 0;
+    bidOnOwn = config->bidOnOwn;
 }
 
 AuctionatorBidder::~AuctionatorBidder()

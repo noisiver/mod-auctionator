@@ -222,6 +222,8 @@ void Auctionator::InitializeConfig(ConfigMgr* configMgr)
     config->neutralBidder.cycleMinutes = configMgr->GetOption<uint32>("Auctionator.NeutralBidder.CycleMinutes", 30);
     config->neutralBidder.maxPerCycle = configMgr->GetOption<uint32>("Auctionator.NeutralBidder.MaxPerCycle", 1);
 
+    config->bidOnOwn = configMgr->GetOption<uint32>("Auctionator.Bidder.BidOnOwn", 0);
+
     logInfo("Auctionator config initialized");
 }
 

@@ -37,6 +37,8 @@ class AuctionatorConfig
         AuctionatorBidderConfig allianceBidder;
         AuctionatorBidderConfig hordeBidder;
         AuctionatorBidderConfig neutralBidder;
+
+        uint32 bidOnOwn = 0;
 };
 
 #endif

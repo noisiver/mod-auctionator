@@ -50,6 +50,10 @@ Auctionator.NeutralBidder.Enabled = 1
 Auctionator.NeutralBidder.CycleMinutes = 30
 Auctionator.NeutralBidder.MaxPerCycle = 2
 
+# Allows the bidder to bid on their own auctions.
+# This is useful for testing changes and would also
+# get you more turnover in you auctions.
+Auctionator.Bidder.BidOnOwn = 0
 
 ###################################################################################################
 # LOGGING SYSTEM SETTINGS
