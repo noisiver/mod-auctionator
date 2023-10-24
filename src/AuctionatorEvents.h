@@ -31,6 +31,7 @@ class AuctionatorEvents : public AuctionatorBase
         void EventHordeBidder();
         void EventNeutralBidder();
         void SetPlayerGuid(ObjectGuid playerGuid);
+        EventMap GetEvents();
 };
 
 #endif

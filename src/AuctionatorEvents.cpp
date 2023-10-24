@@ -126,3 +126,8 @@ void AuctionatorEvents::EventNeutralBidder()
     AuctionatorBidder bidder = AuctionatorBidder(AUCTIONHOUSE_NEUTRAL, auctionatorGuid, config);
     bidder.SpendSomeCash();
 }
+
+EventMap AuctionatorEvents::GetEvents()
+{
+    return events;
+}

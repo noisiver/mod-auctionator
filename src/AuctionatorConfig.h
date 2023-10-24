@@ -7,8 +7,8 @@
 struct AuctionatorHouseConfig
 {
     public:
-        uint32 enabled;
-        uint32 maxAuctions;
+        uint32 enabled = 0;
+        uint32 maxAuctions = 100;
 };
 
 struct AuctionatorBidderConfig
@@ -25,10 +25,10 @@ class AuctionatorConfig
 
     public:
         AuctionatorConfig() {};
-        bool isEnabled;
-        uint32 characterId;
-        uint32 characterGuid;
-        uint32 auctionHouseId;
+        bool isEnabled = false;
+        uint32 characterId = 0;
+        uint32 characterGuid = 0;
+        uint32 auctionHouseId = 7;
 
         AuctionatorHouseConfig hordeSeller;
         AuctionatorHouseConfig allianceSeller;

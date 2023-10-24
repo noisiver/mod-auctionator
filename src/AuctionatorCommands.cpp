@@ -45,6 +45,9 @@ class AuctionatorCommands : public CommandScript
             const char* param3 = strtok(NULL, " ");
             const char* param4 = strtok(NULL, " ");
 
+            // Create an array of const char* items
+            const char* commandParams[] = { param1, param2, param3, param4 };
+
             if(strlen(command) == 0) {
                 return true;
             }
@@ -58,79 +61,17 @@ class AuctionatorCommands : public CommandScript
                 uint32 auctionHouseId = std::stoi(param1);
                 uint32 itemId = std::stoi(param2);
                 uint32 price = std::stoi(param3);
-                AuctionatorCommands::AddItemForBuyout(auctionHouseId, itemId, price);
+                AddItemForBuyout(auctionHouseId, itemId, price);
             } else if (commandString == "expireall") {
-                if (!param1) {
-                    handler->SendSysMessage("[Auctionator] expireall: No Auction House Specified!");
-                    gAuctionator->logInfo("expireall: No Auction House Specified!");
-                    return true;
-                }
-                uint32 houseId = std::stoi(param1);
-
-                handler->SendSysMessage("[Auctionator] Expiring all Auctions for house: " + std::to_string(houseId));
-                gAuctionator->logInfo("expireall: Expiring all auctions for house: " + std::to_string(houseId));
-
-                gAuctionator->ExpireAllAuctions(houseId);
-
-                gAuctionator->logInfo("expireall: All auctions expired for house: " + std::to_string(houseId));
+                CommandExpireAll(commandParams, handler, gAuctionator);
             } else if (commandString == "enable") {
-                if (!param1) {
-                    handler->SendSysMessage("[Auctionator] enable: No Auction House Specified!");
-                    gAuctionator->logInfo("enable: No Auction House Specified!");
-                    return true;
-                }
-
-                std::string toEnable(param1);
-                if (toEnable == "hordeseller") {
-                    gAuctionator->config->hordeSeller.enabled = 1;
-                    gAuctionator->logInfo("Horde seller enabled");
-                    return true;
-                } else if (toEnable == "allianceseller") {
-                    gAuctionator->config->allianceSeller.enabled = 1;
-                    gAuctionator->logInfo("Alliance seller enabled");
-                    return true;
-                } else if (toEnable == "neutralseller") {
-                    gAuctionator->config->neutralSeller.enabled = 1;
-                    gAuctionator->logInfo("Neutral seller enabled");
-                    return true;
-                } else if (toEnable == "all") {
-                    gAuctionator->config->hordeSeller.enabled = 1;
-                    gAuctionator->config->allianceSeller.enabled = 1;
-                    gAuctionator->config->neutralSeller.enabled = 1;
-                    gAuctionator->logInfo("All sellers enabled");
-                    return true;
-                }
+                CommandEnableSeller(commandParams, handler, gAuctionator);
             } else if (commandString == "disable") {
-                if (!param1) {
-                    handler->SendSysMessage("[Auctionator] disable: No Auction House Specified!");
-                    gAuctionator->logInfo("disable: No Auction House Specified!");
-                    return true;
-                }
-
-                std::string toEnable(param1);
-                if (toEnable == "hordeseller") {
-                    gAuctionator->config->hordeSeller.enabled = 0;
-                    gAuctionator->logInfo("Horde seller disabled");
-                    return true;
-                } else if (toEnable == "allianceseller") {
-                    gAuctionator->config->allianceSeller.enabled = 0;
-                    gAuctionator->logInfo("Alliance seller disabled");
-                    return true;
-                } else if (toEnable == "neutralseller") {
-                    gAuctionator->config->neutralSeller.enabled = 0;
-                    gAuctionator->logInfo("Neutral seller disabled");
-                    return true;
-                } else if (toEnable == "all") {
-                    gAuctionator->config->hordeSeller.enabled = 0;
-                    gAuctionator->config->allianceSeller.enabled = 0;
-                    gAuctionator->config->neutralSeller.enabled = 0;
-                    gAuctionator->logInfo("All sellers disabled");
-                    return true;
-                }
+                CommandDisableSeller(commandParams, handler, gAuctionator);
             } else if (commandString == "status") {
-                AuctionatorCommands::ShowStatus(handler);
+                ShowStatus(handler);
             } else if (commandString == "help") {
-                AuctionatorCommands::ShowHelp(handler);
+                ShowHelp(handler);
                 return true;
             }
 
@@ -193,6 +134,90 @@ help
             statusString += "        Per Cycle: " + std::to_string(gAuctionator->config->neutralBidder.maxPerCycle) + "\n";
 
             handler->SendSysMessage(statusString);
+        }
+
+        static bool CommandExpireAll(const char** params, ChatHandler* handler, Auctionator* auctionator)
+        {
+            if (!params[0]) {
+                handler->SendSysMessage("[Auctionator] expireall: No Auction House Specified!");
+                auctionator->logInfo("expireall: No Auction House Specified!");
+                return true;
+            }
+            uint32 houseId = std::stoi(params[0]);
+
+            handler->SendSysMessage("[Auctionator] Expiring all Auctions for house: "
+                + std::to_string(houseId));
+            auctionator->logInfo("expireall: Expiring all auctions for house: "
+                + std::to_string(houseId));
+
+            auctionator->ExpireAllAuctions(houseId);
+
+            auctionator->logInfo("expireall: All auctions expired for house: "
+                + std::to_string(houseId));
+
+            return true;
+        }
+
+        static bool CommandEnableSeller(const char** params, ChatHandler* handler, Auctionator* auctionator)
+        {
+            if (!params[0]) {
+                handler->SendSysMessage("[Auctionator] enable: No Auction House Specified! [hordeseller, allianceseller, neutralseller, all]");
+                auctionator->logInfo("enable: No Auction House Specified!");
+                return true;
+            }
+
+            std::string toEnable(params[0]);
+            if (toEnable == "hordeseller") {
+                auctionator->config->hordeSeller.enabled = 1;
+                auctionator->logInfo("Horde seller enabled");
+                return true;
+            } else if (toEnable == "allianceseller") {
+                auctionator->config->allianceSeller.enabled = 1;
+                auctionator->logInfo("Alliance seller enabled");
+                return true;
+            } else if (toEnable == "neutralseller") {
+                auctionator->config->neutralSeller.enabled = 1;
+                auctionator->logInfo("Neutral seller enabled");
+                return true;
+            } else if (toEnable == "all") {
+                auctionator->config->hordeSeller.enabled = 1;
+                auctionator->config->allianceSeller.enabled = 1;
+                auctionator->config->neutralSeller.enabled = 1;
+                auctionator->logInfo("All sellers enabled");
+                return true;
+            }
+
+            return true;
+        }
+
+        static bool CommandDisableSeller(const char** params, ChatHandler* handler, Auctionator* auctionator)
+        {
+            if (!params[0]) {
+                handler->SendSysMessage("[Auctionator] disable: No Auction House Specified! [hordeseller, allianceseller, neutralseller, all]");
+                auctionator->logInfo("disable: No Auction House Specified!");
+                return true;
+            }
+
+            std::string toDisable(params[0]);
+            if (toDisable == "hordeseller") {
+                auctionator->config->hordeSeller.enabled = 0;
+                auctionator->logInfo("Horde seller disabled");
+                return true;
+            } else if (toDisable == "allianceseller") {
+                auctionator->config->allianceSeller.enabled = 0;
+                auctionator->logInfo("Alliance seller disabled");
+                return true;
+            } else if (toDisable == "neutralseller") {
+                auctionator->config->neutralSeller.enabled = 0;
+                auctionator->logInfo("Neutral seller disabled");
+                return true;
+            } else if (toDisable == "all") {
+                auctionator->config->hordeSeller.enabled = 0;
+                auctionator->config->allianceSeller.enabled = 0;
+                auctionator->config->neutralSeller.enabled = 0;
+                auctionator->logInfo("All sellers disabled");
+                return true;
+            }
         }
 };
 
