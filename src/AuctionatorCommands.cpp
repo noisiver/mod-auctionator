@@ -183,7 +183,22 @@ help
                 auctionator->config->hordeSeller.enabled = 1;
                 auctionator->config->allianceSeller.enabled = 1;
                 auctionator->config->neutralSeller.enabled = 1;
+                auctionator->config->hordeBidder.enabled = 1;
+                auctionator->config->allianceBidder.enabled = 1;
+                auctionator->config->neutralBidder.enabled = 1;
                 auctionator->logInfo("All sellers enabled");
+                return true;
+            } else if (toEnable == "hordebidder") {
+                auctionator->config->hordeBidder.enabled = 1;
+                auctionator->logInfo("Horde bidder enabled");
+                return true;
+            } else if (toEnable == "alliancebidder") {
+                auctionator->config->allianceBidder.enabled = 1;
+                auctionator->logInfo("Alliance bidder enabled");
+                return true;
+            } else if (toEnable == "neutralbidder") {
+                auctionator->config->neutralBidder.enabled = 1;
+                auctionator->logInfo("Neutral bidder enabled");
                 return true;
             }
 
@@ -215,7 +230,22 @@ help
                 auctionator->config->hordeSeller.enabled = 0;
                 auctionator->config->allianceSeller.enabled = 0;
                 auctionator->config->neutralSeller.enabled = 0;
+                auctionator->config->hordeBidder.enabled = 0;
+                auctionator->config->allianceBidder.enabled = 0;
+                auctionator->config->neutralBidder.enabled = 0;
                 auctionator->logInfo("All sellers disabled");
+                return true;
+            } else if (toDisable == "hordebidder") {
+                auctionator->config->hordeBidder.enabled = 0;
+                auctionator->logInfo("Horde bidder disabled");
+                return true;
+            } else if (toDisable == "alliancebidder") {
+                auctionator->config->allianceBidder.enabled = 0;
+                auctionator->logInfo("Alliance bidder disabled");
+                return true;
+            } else if (toDisable == "neutralbidder") {
+                auctionator->config->neutralBidder.enabled = 0;
+                auctionator->logInfo("Neutral bidder disabled");
                 return true;
             }
         }
