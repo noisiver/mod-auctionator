@@ -4,6 +4,7 @@
 #include "Item.h"
 #include "DatabaseEnv.h"
 #include "PreparedStatement.h"
+#include <random>
 
 
 AuctionatorSeller::AuctionatorSeller(Auctionator* natorParam, uint32 auctionHouseIdParam)
@@ -66,14 +67,13 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
             AND (ic.itemCount IS NULL OR ic.itemCount < aicconf.max_count)
             AND VerifiedBuild != 1
         ORDER BY RAND()
-        LIMIT {}
+        LIMIT 5000
         ;
     )";
 
     QueryResult result = WorldDatabase.Query(
         itemQuery,
-        houseId,
-        maxCount
+        houseId
     );
 
     if (!result)
@@ -82,24 +82,37 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
         return;
     }
 
+    // shuffle result to get more randomness
+    // Extract rows from QueryResult into a vector
+    std::vector<Field*> rows;
+    while (result->NextRow()) {
+        rows.push_back(result->Fetch());
+    }
+
+    // destroy result
+    result.reset();
+
+    // Shuffle the vector
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(rows.begin(), rows.end(), g);
+
     uint32 count = 0;
     uint32 stackSize = 1;
     uint32 price = 0;
-    do
-    {
+    for (auto& row : rows) {
         count++;
-        Field* fields = result->Fetch();
-        std::string itemName = fields[1].Get<std::string>();
+        std::string itemName = row[1].Get<std::string>();
 
-        stackSize = fields[4].Get<uint32>();
+        stackSize = row[4].Get<uint32>();
 
-        price = fields[2].Get<uint32>();
+        price = row[2].Get<uint32>();
         if (price == 0) {
             price = 10000000;
         }
 
         AuctionatorItem newItem = AuctionatorItem();
-        newItem.itemId = fields[0].Get<uint32>();
+        newItem.itemId = row[0].Get<uint32>();
         newItem.quantity = 1;
         newItem.buyout = price * stackSize;
         newItem.time = 60 * 60 * 12;
@@ -111,9 +124,40 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
             + " to house " + std::to_string(houseId)
         );
 
+        if (count == maxCount) {
+            break;
+        }
+    }
 
-        nator->CreateAuction(newItem, houseId);
-    } while (result -> NextRow());
+    // do
+    // {
+    //     count++;
+    //     Field* fields = result->Fetch();
+    //     std::string itemName = fields[1].Get<std::string>();
+
+    //     stackSize = fields[4].Get<uint32>();
+
+    //     price = fields[2].Get<uint32>();
+    //     if (price == 0) {
+    //         price = 10000000;
+    //     }
+
+    //     AuctionatorItem newItem = AuctionatorItem();
+    //     newItem.itemId = fields[0].Get<uint32>();
+    //     newItem.quantity = 1;
+    //     newItem.buyout = price * stackSize;
+    //     newItem.time = 60 * 60 * 12;
+    //     newItem.stackSize = stackSize;
+
+    //     nator->logDebug("Adding item: " + itemName
+    //         + " with quantity of " + std::to_string(newItem.quantity)
+    //         + " at price of " +  std::to_string(newItem.buyout)
+    //         + " to house " + std::to_string(houseId)
+    //     );
+
+
+    //     nator->CreateAuction(newItem, houseId);
+    // } while (result->NextRow());
 
     nator->logInfo("Items added houseId("
         + std::to_string(houseId)

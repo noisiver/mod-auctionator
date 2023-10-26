@@ -45,6 +45,7 @@ void AuctionatorBidder::SpendSomeCash()
         return;
     }
 
+    // move our query results into a vector for easier manipulation
     std::vector<uint32> biddableAuctionIds;
     do {
         biddableAuctionIds.push_back(result->Fetch()->Get<uint32>());
