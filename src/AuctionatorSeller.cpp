@@ -21,6 +21,13 @@ AuctionatorSeller::~AuctionatorSeller()
 
 void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
 {
+
+    // Set the maximum number of items to query for. This need to come from config.
+    uint queryLimit = maxCount;
+
+    // Get the name of the character database so we can do our join below.
+    std::string characterDbName = CharacterDatabase.GetConnectionInfo()->database;
+
     std::string itemQuery = R"(
         SELECT
             it.entry
@@ -29,8 +36,8 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
             , it.stackable
             , aicconf.stack_count
         FROM
-            acore_world.mod_auctionator_itemclass_config aicconf
-            LEFT JOIN acore_world.item_template it ON
+            mod_auctionator_itemclass_config aicconf
+            LEFT JOIN item_template it ON
                 aicconf.class = it.class
                 AND aicconf.subclass = it.subclass
                 -- skip BoP
@@ -39,7 +46,7 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
                     it.bonding >= aicconf.bonding
                     OR it.bonding = 0
                 )
-            LEFT JOIN acore_world.mod_auctionator_disabled_items dis on it.entry = dis.item
+            LEFT JOIN mod_auctionator_disabled_items dis on it.entry = dis.item
             LEFT JOIN (
                 -- this sub query lets us get the current count of each item already in the AH
                 -- so that we can filter out any items where itemCount >= max_count and not add
@@ -49,8 +56,8 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
                     , ii.itemEntry AS itemEntry
                 FROM
                     acore_characters.item_instance ii
-                    INNER JOIN acore_characters.auctionhouse ah ON ii.guid = ah.itemguid
-                    LEFT JOIN acore_world.item_template it ON ii.itemEntry = it.entry
+                    INNER JOIN {}.auctionhouse ah ON ii.guid = ah.itemguid
+                    LEFT JOIN item_template it ON ii.itemEntry = it.entry
                 WHERE ah.houseId = {}
                 GROUP BY ii.itemEntry, it.name
             ) ic ON ic.itemEntry = it.entry
@@ -72,6 +79,7 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
 
     QueryResult result = WorldDatabase.Query(
         itemQuery,
+        characterDbName,
         houseId,
         maxCount
     );
