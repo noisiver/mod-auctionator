@@ -36,7 +36,9 @@ void AuctionatorBidder::SpendSomeCash()
     QueryResult result = CharacterDatabase.Query(query, ownerToSkip, auctionHouseId);
 
     if (!result) {
-        logInfo("Can't see player auctions, moving on.");
+        logInfo("Can't see player auctions at ["
+            + std::to_string(auctionHouseId) + "] not from ["
+            + std::to_string(auctionatorPlayerGuid) + "], moving on.");
         return;
     }
 
