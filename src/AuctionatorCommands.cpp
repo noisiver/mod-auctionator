@@ -61,7 +61,7 @@ class AuctionatorCommands : public CommandScript
                 uint32 auctionHouseId = std::stoi(param1);
                 uint32 itemId = std::stoi(param2);
                 uint32 price = std::stoi(param3);
-                AddItemForBuyout(auctionHouseId, itemId, price);
+                AddItemForBuyout(auctionHouseId, itemId, price, gAuctionator);
             } else if (commandString == "expireall") {
                 CommandExpireAll(commandParams, handler, gAuctionator);
             } else if (commandString == "enable") {
@@ -69,7 +69,7 @@ class AuctionatorCommands : public CommandScript
             } else if (commandString == "disable") {
                 CommandDisableSeller(commandParams, handler, gAuctionator);
             } else if (commandString == "status") {
-                ShowStatus(handler);
+                ShowStatus(handler, gAuctionator);
             } else if (commandString == "help") {
                 ShowHelp(handler);
                 return true;
@@ -79,14 +79,14 @@ class AuctionatorCommands : public CommandScript
             return true;
         }
 
-        static void AddItemForBuyout(uint32 auctionHouseId, uint32 itemId, uint32 price)
+        static void AddItemForBuyout(uint32 auctionHouseId, uint32 itemId, uint32 price, Auctionator* auctionator)
         {
             AuctionatorItem newItem;
             newItem.houseId = auctionHouseId;
             newItem.itemId = itemId;
             newItem.buyout = price;
 
-            gAuctionator->CreateAuction(newItem, AUCTIONHOUSE_NEUTRAL);
+            auctionator->CreateAuction(newItem, AUCTIONHOUSE_NEUTRAL);
         }
 
         static void ShowHelp(ChatHandler* handler)
@@ -103,35 +103,35 @@ help
             handler->SendSysMessage(helpString);
         }
 
-        static void ShowStatus(ChatHandler* handler)
+        static void ShowStatus(ChatHandler* handler, Auctionator* auctionator)
         {
             std::string statusString = "[Auctionator] Status:\n\n";
 
-            statusString += " Enabled: " + std::to_string(gAuctionator->config->isEnabled) + "\n\n";
+            statusString += " Enabled: " + std::to_string(auctionator->config->isEnabled) + "\n\n";
 
             statusString += " Horde:\n";
-            statusString += "    Seller Enabled: " + std::to_string(gAuctionator->config->hordeSeller.enabled) + "\n";
-            statusString += "        Max Auctions: " + std::to_string(gAuctionator->config->hordeSeller.maxAuctions) + "\n";
-            statusString += "        Auctions: " + std::to_string(gAuctionator->GetAuctionHouse(AUCTIONHOUSE_HORDE)->Getcount()) + "\n";
-            statusString += "    Bidder Enabled: " + std::to_string(gAuctionator->config->hordeBidder.enabled) + "\n";
-            statusString += "        Cycle Time: " + std::to_string(gAuctionator->config->hordeBidder.cycleMinutes) + "\n";
-            statusString += "        Per Cycle: " + std::to_string(gAuctionator->config->hordeBidder.maxPerCycle) + "\n";
+            statusString += "    Seller Enabled: " + std::to_string(auctionator->config->hordeSeller.enabled) + "\n";
+            statusString += "        Max Auctions: " + std::to_string(auctionator->config->hordeSeller.maxAuctions) + "\n";
+            statusString += "        Auctions: " + std::to_string(auctionator->GetAuctionHouse(AUCTIONHOUSE_HORDE)->Getcount()) + "\n";
+            statusString += "    Bidder Enabled: " + std::to_string(auctionator->config->hordeBidder.enabled) + "\n";
+            statusString += "        Cycle Time: " + std::to_string(auctionator->config->hordeBidder.cycleMinutes) + "\n";
+            statusString += "        Per Cycle: " + std::to_string(auctionator->config->hordeBidder.maxPerCycle) + "\n";
 
             statusString += " Alliance:\n";
-            statusString += "    Seller Enabled: " + std::to_string(gAuctionator->config->allianceSeller.enabled) + "\n";
-            statusString += "        Max Auctions: " + std::to_string(gAuctionator->config->allianceSeller.maxAuctions) + "\n";
-            statusString += "        Auctions: " + std::to_string(gAuctionator->GetAuctionHouse(AUCTIONHOUSE_ALLIANCE)->Getcount()) + "\n";
-            statusString += "    Bidder Enabled: " + std::to_string(gAuctionator->config->allianceBidder.enabled) + "\n";
-            statusString += "        Cycle Time: " + std::to_string(gAuctionator->config->allianceBidder.cycleMinutes) + "\n";
-            statusString += "        Per Cycle: " + std::to_string(gAuctionator->config->allianceBidder.maxPerCycle) + "\n";
+            statusString += "    Seller Enabled: " + std::to_string(auctionator->config->allianceSeller.enabled) + "\n";
+            statusString += "        Max Auctions: " + std::to_string(auctionator->config->allianceSeller.maxAuctions) + "\n";
+            statusString += "        Auctions: " + std::to_string(auctionator->GetAuctionHouse(AUCTIONHOUSE_ALLIANCE)->Getcount()) + "\n";
+            statusString += "    Bidder Enabled: " + std::to_string(auctionator->config->allianceBidder.enabled) + "\n";
+            statusString += "        Cycle Time: " + std::to_string(auctionator->config->allianceBidder.cycleMinutes) + "\n";
+            statusString += "        Per Cycle: " + std::to_string(auctionator->config->allianceBidder.maxPerCycle) + "\n";
 
             statusString += " Neutral:\n";
-            statusString += "    Seller Enabled: " + std::to_string(gAuctionator->config->neutralSeller.enabled) + "\n";
-            statusString += "        Max Auctions: " + std::to_string(gAuctionator->config->neutralSeller.maxAuctions) + "\n";
-            statusString += "        Auctions: " + std::to_string(gAuctionator->GetAuctionHouse(AUCTIONHOUSE_NEUTRAL)->Getcount()) + "\n";
-            statusString += "    Bidder Enabled: " + std::to_string(gAuctionator->config->neutralBidder.enabled) + "\n";
-            statusString += "        Cycle Time: " + std::to_string(gAuctionator->config->neutralBidder.cycleMinutes) + "\n";
-            statusString += "        Per Cycle: " + std::to_string(gAuctionator->config->neutralBidder.maxPerCycle) + "\n";
+            statusString += "    Seller Enabled: " + std::to_string(auctionator->config->neutralSeller.enabled) + "\n";
+            statusString += "        Max Auctions: " + std::to_string(auctionator->config->neutralSeller.maxAuctions) + "\n";
+            statusString += "        Auctions: " + std::to_string(auctionator->GetAuctionHouse(AUCTIONHOUSE_NEUTRAL)->Getcount()) + "\n";
+            statusString += "    Bidder Enabled: " + std::to_string(auctionator->config->neutralBidder.enabled) + "\n";
+            statusString += "        Cycle Time: " + std::to_string(auctionator->config->neutralBidder.cycleMinutes) + "\n";
+            statusString += "        Per Cycle: " + std::to_string(auctionator->config->neutralBidder.maxPerCycle) + "\n";
 
             handler->SendSysMessage(statusString);
         }
@@ -183,7 +183,22 @@ help
                 auctionator->config->hordeSeller.enabled = 1;
                 auctionator->config->allianceSeller.enabled = 1;
                 auctionator->config->neutralSeller.enabled = 1;
+                auctionator->config->hordeBidder.enabled = 1;
+                auctionator->config->allianceBidder.enabled = 1;
+                auctionator->config->neutralBidder.enabled = 1;
                 auctionator->logInfo("All sellers enabled");
+                return true;
+            } else if (toEnable == "hordebidder") {
+                auctionator->config->hordeBidder.enabled = 1;
+                auctionator->logInfo("Horde bidder enabled");
+                return true;
+            } else if (toEnable == "alliancebidder") {
+                auctionator->config->allianceBidder.enabled = 1;
+                auctionator->logInfo("Alliance bidder enabled");
+                return true;
+            } else if (toEnable == "neutralbidder") {
+                auctionator->config->neutralBidder.enabled = 1;
+                auctionator->logInfo("Neutral bidder enabled");
                 return true;
             }
 
@@ -215,7 +230,22 @@ help
                 auctionator->config->hordeSeller.enabled = 0;
                 auctionator->config->allianceSeller.enabled = 0;
                 auctionator->config->neutralSeller.enabled = 0;
+                auctionator->config->hordeBidder.enabled = 0;
+                auctionator->config->allianceBidder.enabled = 0;
+                auctionator->config->neutralBidder.enabled = 0;
                 auctionator->logInfo("All sellers disabled");
+                return true;
+            } else if (toDisable == "hordebidder") {
+                auctionator->config->hordeBidder.enabled = 0;
+                auctionator->logInfo("Horde bidder disabled");
+                return true;
+            } else if (toDisable == "alliancebidder") {
+                auctionator->config->allianceBidder.enabled = 0;
+                auctionator->logInfo("Alliance bidder disabled");
+                return true;
+            } else if (toDisable == "neutralbidder") {
+                auctionator->config->neutralBidder.enabled = 0;
+                auctionator->logInfo("Neutral bidder disabled");
                 return true;
             }
         }
