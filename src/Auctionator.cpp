@@ -25,9 +25,6 @@ Auctionator::Auctionator()
     ObjectGuid buyerGuid = ObjectGuid::Create<HighGuid::Player>(config->characterGuid);
     events = AuctionatorEvents(config);
     events.SetPlayerGuid(buyerGuid);
-    // events.InitializeEvents();
-    // events = EventMap();
-    // events.ScheduleEvent(1, 180);
 };
 
 Auctionator::~Auctionator()
