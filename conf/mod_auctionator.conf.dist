@@ -55,6 +55,16 @@ Auctionator.NeutralBidder.MaxPerCycle = 2
 # get you more turnover in you auctions.
 Auctionator.Bidder.BidOnOwn = 0
 
+########################################
+# Multipliers for seller and bidder prices
+########################################
+Auctionator.Multipliers.Poor = 1.0;
+Auctionator.Multipliers.Normal = 1.0;
+Auctionator.Multipliers.Uncommon = 1.5;
+Auctionator.Multipliers.Rare = 2.0;
+Auctionator.Multipliers.Epic = 6.0;
+Auctionator.Multipliers.Legendary = 10.0;
+
 ###################################################################################################
 # LOGGING SYSTEM SETTINGS
 #

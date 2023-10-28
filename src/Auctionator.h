@@ -61,7 +61,7 @@ class Auctionator : public AuctionatorBase
         void Update();
 
         AuctionHouseObject *GetAuctionMgr(uint32 auctionHouseId);
-
+        static float GetQualityMultiplier(AuctionatorPriceMultiplierConfig config, uint32 quality);
 
         static Auctionator *getInstance()
         {

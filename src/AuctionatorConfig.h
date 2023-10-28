@@ -19,6 +19,17 @@ struct AuctionatorBidderConfig
         uint32 maxPerCycle;
 };
 
+struct AuctionatorPriceMultiplierConfig
+{
+    public:
+        float poor = 1.0f;
+        float normal = 1.0f;
+        float uncommon = 1.5f;
+        float rare = 2.0f;
+        float epic = 6.0f;
+        float legendary = 10.0f;
+};
+
 class AuctionatorConfig
 {
     private:
@@ -37,6 +48,8 @@ class AuctionatorConfig
         AuctionatorBidderConfig allianceBidder;
         AuctionatorBidderConfig hordeBidder;
         AuctionatorBidderConfig neutralBidder;
+
+        AuctionatorPriceMultiplierConfig multipliers;
 
         uint32 bidOnOwn = 0;
 };

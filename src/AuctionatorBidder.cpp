@@ -230,5 +230,10 @@ uint32 AuctionatorBidder::CalculateBuyPrice(AuctionEntry* auction, ItemTemplate 
         stackSize = auction->itemCount;
     }
 
-    return stackSize * item->BuyPrice;
+    AuctionatorPriceMultiplierConfig multiplierConfig = config->multipliers;
+
+    uint32 quality  = item->Quality;
+    float qualityMultiplier = Auctionator::GetQualityMultiplier(multiplierConfig, quality);
+
+    return uint32(stackSize * item->BuyPrice * qualityMultiplier);
 }

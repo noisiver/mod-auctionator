@@ -221,6 +221,19 @@ void Auctionator::InitializeConfig(ConfigMgr* configMgr)
 
     config->bidOnOwn = configMgr->GetOption<uint32>("Auctionator.Bidder.BidOnOwn", 0);
 
+    config->multipliers.poor
+        = configMgr->GetOption<float>("Auctionator.Multipliers.Poor", 1.0f);
+    config->multipliers.normal
+        = configMgr->GetOption<float>("Auctionator.Multipliers.Normal", 1.0f);
+    config->multipliers.uncommon
+        = configMgr->GetOption<float>("Auctionator.Multipliers.Uncommon", 1.5f);
+    config->multipliers.rare
+        = configMgr->GetOption<float>("Auctionator.Multipliers.Rare", 2.0f);
+    config->multipliers.epic
+        = configMgr->GetOption<float>("Auctionator.Multipliers.Epic", 6.0f);
+    config->multipliers.legendary
+        = configMgr->GetOption<float>("Auctionator.Multipliers.Legendary", 10.0f);
+
     logInfo("Auctionator config initialized");
 }
 
@@ -353,4 +366,24 @@ void Auctionator::ExpireAllAuctions(uint32 houseId)
     }
 
     logDebug("House auctions expired: " + std::to_string(houseId));
+}
+
+float Auctionator::GetQualityMultiplier(AuctionatorPriceMultiplierConfig config, uint32 quality)
+{
+    switch(quality) {
+        case ITEM_QUALITY_POOR:
+            return 1;
+        case ITEM_QUALITY_NORMAL:
+            return 1;
+        case ITEM_QUALITY_UNCOMMON:
+            return 1.5;
+        case ITEM_QUALITY_RARE:
+            return 2;
+        case ITEM_QUALITY_EPIC:
+            return 6;
+        case ITEM_QUALITY_LEGENDARY:
+            return 10;
+        default:
+            return 1;
+    }
 }

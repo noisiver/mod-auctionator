@@ -4,7 +4,7 @@
 
 #include "Auctionator.h"
 #include "AuctionHouseMgr.h"
- 
+
 class AuctionatorSeller
 {
     private:

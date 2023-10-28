@@ -24,7 +24,7 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
 {
 
     // Set the maximum number of items to query for. This need to come from config.
-    uint queryLimit = maxCount;
+    uint queryLimit = 1000;
 
     // Get the name of the character database so we can do our join below.
     std::string characterDbName = CharacterDatabase.GetConnectionInfo()->database;
@@ -36,6 +36,7 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
             , it.BuyPrice
             , it.stackable
             , aicconf.stack_count
+            , it.quality
         FROM
             mod_auctionator_itemclass_config aicconf
             LEFT JOIN item_template it ON
@@ -136,6 +137,7 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
     //     }
     // }
 
+    AuctionatorPriceMultiplierConfig multiplierConfig = nator->config->multipliers;
     uint count = 0;
     do
     {
@@ -150,10 +152,13 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
             price = 10000000;
         }
 
+        uint32 quality = fields[5].Get<uint32>();
+        float qualityMultiplier = Auctionator::GetQualityMultiplier(multiplierConfig, quality);
+
         AuctionatorItem newItem = AuctionatorItem();
         newItem.itemId = fields[0].Get<uint32>();
         newItem.quantity = 1;
-        newItem.buyout = price * stackSize;
+        newItem.buyout = uint32(price * stackSize * qualityMultiplier);
         newItem.time = 60 * 60 * 12;
         newItem.stackSize = stackSize;
 
