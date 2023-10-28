@@ -24,7 +24,7 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
 {
 
     // Set the maximum number of items to query for. This need to come from config.
-    uint queryLimit = 1000;
+    uint32 queryLimit = 1000;
 
     // Get the name of the character database so we can do our join below.
     std::string characterDbName = CharacterDatabase.GetConnectionInfo()->database;
@@ -138,7 +138,7 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
     // }
 
     AuctionatorPriceMultiplierConfig multiplierConfig = nator->config->multipliers;
-    uint count = 0;
+    uint32 count = 0;
     do
     {
         count++;
