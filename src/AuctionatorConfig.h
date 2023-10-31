@@ -30,6 +30,13 @@ struct AuctionatorPriceMultiplierConfig
         float legendary = 10.0f;
 };
 
+struct AuctionatorSellerConfig
+{
+    public:
+        uint32 queryLimit = 1000;
+        uint32 defaultPrice = 10000000;
+};
+
 class AuctionatorConfig
 {
     private:
@@ -50,6 +57,8 @@ class AuctionatorConfig
         AuctionatorBidderConfig neutralBidder;
 
         AuctionatorPriceMultiplierConfig multipliers;
+
+        AuctionatorSellerConfig sellerConfig;
 
         uint32 bidOnOwn = 0;
 };

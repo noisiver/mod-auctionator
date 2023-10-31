@@ -50,9 +50,27 @@ Auctionator.NeutralBidder.Enabled = 1
 Auctionator.NeutralBidder.CycleMinutes = 30
 Auctionator.NeutralBidder.MaxPerCycle = 2
 
+
+########################################
+# Limit on the number of items the seller can retrieve in a
+# single query. Not sure this needs to be configurable. but
+# this may be helpful for changing randomness of the auctions.
+# Default is 1000 items.
+########################################
+Auctionator.Seller.QueryLimit = 1000;
+
+########################################
+# Default price for items that have a BuyPrice of 0.
+# Default is 1000 gold.
+########################################
+Auctoinator.Seller.DefaultPrice = 10000000;
+
+########################################
 # Allows the bidder to bid on their own auctions.
 # This is useful for testing changes and would also
 # get you more turnover in you auctions.
+# Default is 0 to disable bidding on own auctions.
+########################################
 Auctionator.Bidder.BidOnOwn = 0
 
 ########################################
