@@ -23,12 +23,23 @@ AuctionatorSeller::~AuctionatorSeller()
 void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
 {
 
-    // Set the maximum number of items to query for. This need to come from config.
-    uint32 queryLimit = 1000;
+    // Set the maximum number of items to query for. Changing this <might>
+    // affect how random our auctoin listing are at the cost of memory/cpu
+    // but it is something i need to test.
+    uint32 queryLimit = nator->config->sellerConfig.queryLimit;
 
     // Get the name of the character database so we can do our join below.
     std::string characterDbName = CharacterDatabase.GetConnectionInfo()->database;
 
+    // soooo, let's talk query.
+    // I like doing this with a query because it's easy to me but this isn't
+    // really how acore works AND this makes this module completely incompatible
+    // with Trinitycore and other cores that don't have a template table and instead
+    // rely on the DBC files. I really should use the memory store of templates
+    // for this but it would mean a TON of extra knarly c++ code that i just don't
+    // want to write. If you want to run this on trinity or want to write that nasty
+    // c++ in a trinity specific iffy block thing and submit a PR i would be happy
+    // to consider it, but left on my own I am going to stick with this sql query.
     std::string itemQuery = R"(
         SELECT
             it.entry
@@ -143,6 +154,8 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
     {
         count++;
         Field* fields = result->Fetch();
+
+        // TODO: refactor listing an item into a testable method
         std::string itemName = fields[1].Get<std::string>();
 
         uint32 stackSize = fields[4].Get<uint32>();

@@ -75,7 +75,7 @@ void AuctionatorBidder::SpendSomeCash()
             return;
         }
 
-        // Item *item = sAuctionMgr->GetAItem(auction->item_guid);
+        // get our item template for this item, we need some of these details for pricing and such.
         ItemTemplate const* itemTemplate = sObjectMgr->GetItemTemplate(auction->item_template);
 
         logInfo("Considering auction: "
@@ -88,6 +88,8 @@ void AuctionatorBidder::SpendSomeCash()
 
         bool success = false;
 
+        // If this item has a buyout price, let's try to buy it. Otherwise we will
+        // see if it's worth bidding on.
         if (auction->buyout > 0) {
             success = BuyoutAuction(auction, itemTemplate);
         } else {
@@ -99,7 +101,6 @@ void AuctionatorBidder::SpendSomeCash()
             logInfo("Purchase made, remaining: " + std::to_string(purchasePerCycle));
         }
     }
-
 }
 
 AuctionEntry* AuctionatorBidder::GetAuctionForPurchase(std::vector<uint32>& auctionIds)
@@ -121,6 +122,10 @@ bool AuctionatorBidder::BidOnAuction(AuctionEntry* auction, ItemTemplate const* 
 {
     uint32 currentPrice;
 
+    // Check and see if someone has already bid on this auction. It is afterall
+    // possible that a player has bid on it and we (currently) aren't in the market
+    // of outbidding players. It's also possible we have bid on it and there is
+    // no reason for us to bid against ourselves.
     if (auction->bid) {
         if (auction->bidder == buyerGuid) {
             logInfo("Skipping auction, I have already bid: "
@@ -131,11 +136,16 @@ bool AuctionatorBidder::BidOnAuction(AuctionEntry* auction, ItemTemplate const* 
         }
         return false;
     } else {
+        // nobody has bidded on this auction, so let's grab it's current bid value
+        // for further scrutiny.
         currentPrice = auction->startbid;
     }
 
+    // find out what we should really consider paying for the auction
     uint32 buyPrice = CalculateBuyPrice(auction, itemTemplate);
 
+    // decide if our bid is less than the max amount we want to pay to avoid overpaying
+    // for an item. 
     if (currentPrice > buyPrice) {
         logInfo("Skipping auction ("
             + std::to_string(auction->Id) + "), price of "
@@ -145,11 +155,16 @@ bool AuctionatorBidder::BidOnAuction(AuctionEntry* auction, ItemTemplate const* 
         return false;
     }
 
+    // Let's make a bid. We are going to add half the difference between the current
+    // bid and the max price to the amount we bid just to try to help the seller out
+    // a little bit but not overpay by TOO much.
     uint32 bidPrice = currentPrice + (buyPrice - currentPrice) / 2;
 
     auction->bidder = buyerGuid;
     auction->bid = bidPrice;
 
+    // we probably shouldn't be updating the database directly here but this is what
+    // i have seen the ahbot mod do so i am going with it for now.
     CharacterDatabase.Execute(R"(
             UPDATE
                 auctionhouse
@@ -175,6 +190,7 @@ bool AuctionatorBidder::BidOnAuction(AuctionEntry* auction, ItemTemplate const* 
 
 bool AuctionatorBidder::BuyoutAuction(AuctionEntry* auction, ItemTemplate const* itemTemplate)
 {
+    // let's just go ahead and find out what the max we will pay for this item is.
     uint32 buyPrice = CalculateBuyPrice(auction, itemTemplate);
 
     if (auction->buyout > buyPrice) {
@@ -184,11 +200,15 @@ bool AuctionatorBidder::BuyoutAuction(AuctionEntry* auction, ItemTemplate const*
         return false;
     }
 
+    // also based somewhat on what ahbot does, let's go ahead and buy this.
     auto trans = CharacterDatabase.BeginTransaction();
+    // set our bidder and bid on the auction record.
     auction->bidder = buyerGuid;
     auction->bid = auction->buyout;
 
+    // let the seller know we bought their junk.
     sAuctionMgr->SendAuctionSuccessfulMail(auction, trans);
+    // delete the auction for the database so it doesn't come back on a server reload.
     auction->DeleteFromDB(trans);
 
     logInfo("Purchased auction of "
@@ -198,9 +218,12 @@ bool AuctionatorBidder::BuyoutAuction(AuctionEntry* auction, ItemTemplate const*
         + std::to_string(auction->buyout) + " copper."
     );
 
+    // remove the aucton from memory. i don't fully understand why we need to do this
+    // in 2 different places but i am going with it for now.
     sAuctionMgr->RemoveAItem(auction->item_guid);
     ahMgr->RemoveAuction(auction);
 
+    // commit all these changes, however that works. thanks again ahbot.
     CharacterDatabase.CommitTransaction(trans);
 
     return true;
