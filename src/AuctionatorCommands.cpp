@@ -4,6 +4,7 @@
 #include "ScriptMgr.h"
 #include "Chat.h"
 #include "Auctionator.h"
+#include "AuctionatorConfig.h"
 
 using namespace Acore::ChatCommands;
 
@@ -70,6 +71,8 @@ class AuctionatorCommands : public CommandScript
                 CommandDisableSeller(commandParams, handler, gAuctionator);
             } else if (commandString == "status") {
                 ShowStatus(handler, gAuctionator);
+            } else if (commandString == "multiplier") {
+                CommandSetMultiplier(commandParams, handler, gAuctionator);
             } else if (commandString == "help") {
                 ShowHelp(handler);
                 return true;
@@ -93,10 +96,11 @@ class AuctionatorCommands : public CommandScript
         {
             std::string helpString(R"(
 Auctionator Help:
+add ...
 disable ...
 enable ...
-add ...
 expireall ...
+multiplier ...
 status
 help
             )");
@@ -108,6 +112,7 @@ help
             std::string statusString = "[Auctionator] Status:\n\n";
 
             statusString += " Enabled: " + std::to_string(auctionator->config->isEnabled) + "\n\n";
+            statusString += " CharacterGuid: " + std::to_string(auctionator->config->characterGuid) + "\n";
 
             statusString += " Horde:\n";
             statusString += "    Seller Enabled: " + std::to_string(auctionator->config->hordeSeller.enabled) + "\n";
@@ -132,6 +137,18 @@ help
             statusString += "    Bidder Enabled: " + std::to_string(auctionator->config->neutralBidder.enabled) + "\n";
             statusString += "        Cycle Time: " + std::to_string(auctionator->config->neutralBidder.cycleMinutes) + "\n";
             statusString += "        Per Cycle: " + std::to_string(auctionator->config->neutralBidder.maxPerCycle) + "\n";
+
+            statusString += " Multipliers:\n";
+            statusString += "    Poor: " + std::to_string(auctionator->config->multipliers.poor) + "\n";
+            statusString += "    Normal: " + std::to_string(auctionator->config->multipliers.normal) + "\n";
+            statusString += "    Uncommon: " + std::to_string(auctionator->config->multipliers.uncommon) + "\n";
+            statusString += "    Rare: " + std::to_string(auctionator->config->multipliers.rare) + "\n";
+            statusString += "    Epic: " + std::to_string(auctionator->config->multipliers.epic) + "\n";
+            statusString += "    Legendary: " + std::to_string(auctionator->config->multipliers.legendary) + "\n";
+
+            statusString += " Seller settings:\n";
+            statusString += "    Query Limit: " + std::to_string(auctionator->config->sellerConfig.queryLimit) + "\n";
+            statusString += "    Default Price: " + std::to_string(auctionator->config->sellerConfig.defaultPrice) + "\n";
 
             handler->SendSysMessage(statusString);
         }
@@ -248,6 +265,46 @@ help
                 auctionator->logInfo("Neutral bidder disabled");
                 return true;
             }
+
+            return true;
+        }
+        
+        static bool CommandSetMultiplier(const char** params, ChatHandler* handler, Auctionator* auctionator)
+        {
+            if(!params[0]) {
+                handler->SendSysMessage("[Auctionator] multiplier: No quality specified! [poor, normal, uncommon, rare, epic, legendary]");
+                auctionator->logInfo("multiplier: No quality specified");
+            }
+
+            if(!params[1]) {
+                handler->SendSysMessage("[Auctionator] multiplier: No multiplier specified!");
+                auctionator->logInfo("multiplier: No multiplier specified Specified!");
+            }
+
+            if (!params[0] || !params[1]) {
+                return true;
+            }
+
+            std::string quality(params[0]);
+            uint32 newMultiplier = std::stoi(params[1]);
+
+            AuctionatorPriceMultiplierConfig* multipliers = &auctionator->config->multipliers;
+
+            if(quality == "poor") {
+                multipliers->poor = newMultiplier;
+            } else if (quality == "normal") {
+                multipliers->normal = newMultiplier;
+            } else if (quality == "uncommon") {
+                multipliers->uncommon = newMultiplier;
+            } else if (quality == "rare") {
+                multipliers->rare = newMultiplier;
+            } else if (quality == "epic") {
+                multipliers->epic = newMultiplier;
+            } else if (quality == "legendary") {
+                multipliers->legendary = newMultiplier;
+            }
+
+            return true;
         }
 };
 
