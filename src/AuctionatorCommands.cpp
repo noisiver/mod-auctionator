@@ -63,16 +63,18 @@ class AuctionatorCommands : public CommandScript
                 uint32 itemId = std::stoi(param2);
                 uint32 price = std::stoi(param3);
                 AddItemForBuyout(auctionHouseId, itemId, price, gAuctionator);
-            } else if (commandString == "expireall") {
-                CommandExpireAll(commandParams, handler, gAuctionator);
-            } else if (commandString == "enable") {
-                CommandEnableSeller(commandParams, handler, gAuctionator);
+            } else if (commandString == "bidonown") {
+                CommandBidOnOwn(commandParams, handler, gAuctionator);
             } else if (commandString == "disable") {
                 CommandDisableSeller(commandParams, handler, gAuctionator);
-            } else if (commandString == "status") {
-                ShowStatus(handler, gAuctionator);
+            } else if (commandString == "enable") {
+                CommandEnableSeller(commandParams, handler, gAuctionator);
+            } else if (commandString == "expireall") {
+                CommandExpireAll(commandParams, handler, gAuctionator);
             } else if (commandString == "multiplier") {
                 CommandSetMultiplier(commandParams, handler, gAuctionator);
+            } else if (commandString == "status") {
+                ShowStatus(handler, gAuctionator);
             } else if (commandString == "help") {
                 ShowHelp(handler);
                 return true;
@@ -302,6 +304,24 @@ help
                 multipliers->epic = newMultiplier;
             } else if (quality == "legendary") {
                 multipliers->legendary = newMultiplier;
+            }
+
+            return true;
+        }
+
+        static bool CommandBidOnOwn(const char** params, ChatHandler* handler, Auctionator* auctionator)
+        {
+            if (!params[0]) {
+                handler->SendSysMessage("[Auctionator] bitonown: Need to specify 1 (on) or 0 (off).");
+                return true;
+            }
+
+            uint32 bidOnOwn = std::stoi(params[0]);
+
+            if (bidOnOwn == 1) {
+                auctionator->config->bidOnOwn = 1;
+            } else if (bidOnOwn == 0) {
+                auctionator->config->bidOnOwn = 0;
             }
 
             return true;
