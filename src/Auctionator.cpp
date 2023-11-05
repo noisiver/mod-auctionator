@@ -221,6 +221,7 @@ void Auctionator::InitializeConfig(ConfigMgr* configMgr)
 
     config->bidOnOwn = configMgr->GetOption<uint32>("Auctionator.Bidder.BidOnOwn", 0);
 
+    // load out multipliers for buy/sell prices
     config->multipliers.poor
         = configMgr->GetOption<float>("Auctionator.Multipliers.Poor", 1.0f);
     config->multipliers.normal

@@ -76,12 +76,12 @@ Auctionator.Bidder.BidOnOwn = 0
 ########################################
 # Multipliers for seller and bidder prices
 ########################################
-Auctionator.Multipliers.Poor = 1.0;
-Auctionator.Multipliers.Normal = 1.0;
-Auctionator.Multipliers.Uncommon = 1.5;
-Auctionator.Multipliers.Rare = 2.0;
-Auctionator.Multipliers.Epic = 6.0;
-Auctionator.Multipliers.Legendary = 10.0;
+Auctionator.Multipliers.Poor = 1.0f;
+Auctionator.Multipliers.Normal = 1.0f;
+Auctionator.Multipliers.Uncommon = 1.5f;
+Auctionator.Multipliers.Rare = 2.0f;
+Auctionator.Multipliers.Epic = 6.0f;
+Auctionator.Multipliers.Legendary = 10.0f;
 
 ###################################################################################################
 # LOGGING SYSTEM SETTINGS

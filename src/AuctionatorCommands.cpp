@@ -270,7 +270,7 @@ help
 
             return true;
         }
-        
+
         static bool CommandSetMultiplier(const char** params, ChatHandler* handler, Auctionator* auctionator)
         {
             if(!params[0]) {
@@ -294,16 +294,22 @@ help
 
             if(quality == "poor") {
                 multipliers->poor = newMultiplier;
+                handler->SendSysMessage("[Auctionator] multiplier: Poor quality multiplier set to " + std::to_string(newMultiplier));
             } else if (quality == "normal") {
                 multipliers->normal = newMultiplier;
+                handler->SendSysMessage("[Auctionator] multiplier: Normal quality multiplier set to " + std::to_string(newMultiplier));
             } else if (quality == "uncommon") {
                 multipliers->uncommon = newMultiplier;
+                handler->SendSysMessage("[Auctionator] multiplier: Uncommon quality multiplier set to " + std::to_string(newMultiplier));
             } else if (quality == "rare") {
                 multipliers->rare = newMultiplier;
+                handler->SendSysMessage("[Auctionator] multiplier: Rare quality multiplier set to " + std::to_string(newMultiplier));
             } else if (quality == "epic") {
                 multipliers->epic = newMultiplier;
+                handler->SendSysMessage("[Auctionator] multiplier: Epic quality multiplier set to " + std::to_string(newMultiplier));
             } else if (quality == "legendary") {
                 multipliers->legendary = newMultiplier;
+                handler->SendSysMessage("[Auctionator] multiplier: Legendary quality multiplier set to " + std::to_string(newMultiplier));
             }
 
             return true;
@@ -320,8 +326,10 @@ help
 
             if (bidOnOwn == 1) {
                 auctionator->config->bidOnOwn = 1;
+                handler->SendSysMessage("[Auctionator] bidonown: Bid on own enabled.");
             } else if (bidOnOwn == 0) {
                 auctionator->config->bidOnOwn = 0;
+                handler->SendSysMessage("[Auctionator] bidonown: Bid on own disabled.");
             }
 
             return true;
