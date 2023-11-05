@@ -119,7 +119,7 @@ FROM
 -- 			) li
 -- 			INNER JOIN acore_world.item_template itt ON li.item = itt.entry 
 -- 		) it
-        ON aicconf.class = it.class
+--        ON aicconf.class = it.class
         AND aicconf.subclass = it.subclass
         AND it.bonding != 1
         AND (

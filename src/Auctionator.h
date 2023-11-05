@@ -4,11 +4,6 @@
 
 #include "Common.h"
 #include "ObjectGuid.h"
-
-struct AuctionEntry;
-class Player;
-class WorldSession;
-
 #include "ItemTemplate.h"
 #include "AuctionatorConfig.h"
 #include "AuctionHouseMgr.h"
@@ -36,6 +31,7 @@ struct AuctionatorItem
         quantity(1),
         stackSize(1) {}
 };
+
 class Auctionator : public AuctionatorBase
 {
     private:
@@ -61,7 +57,7 @@ class Auctionator : public AuctionatorBase
         void Update();
 
         AuctionHouseObject *GetAuctionMgr(uint32 auctionHouseId);
-
+        static float GetQualityMultiplier(AuctionatorPriceMultiplierConfig config, uint32 quality);
 
         static Auctionator *getInstance()
         {
@@ -70,6 +66,11 @@ class Auctionator : public AuctionatorBase
         }
 };
 
+// I am doing this because when i started this project (and likely still)
+// i sucked at c++ and just copied what i saw in the rest of tcore/acore.
+// But. Don't do this global singleton bullsh!t. It's really bad and it
+// makes this codebase impossible to do any real unit testing on. 
+// TODO: figure out how to get rid of this really bad sh!t.
 #define gAuctionator Auctionator::getInstance()
 
 #endif
