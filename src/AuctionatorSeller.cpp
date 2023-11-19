@@ -74,7 +74,15 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
                 WHERE ah.houseId = {}
                 GROUP BY ii.itemEntry, it.name
             ) ic ON ic.itemEntry = it.entry
-            LEFT JOIN {}.mod_auctionator_market_price mp ON it.entry = mp.entry
+            LEFT JOIN
+                -- We are doing some uglyness here to try to get the latest market
+                -- price for each item. Not sure this is doing what I want but it
+                -- seems to be working at the moment. If you aren't always getting
+                -- the newest price look here.
+                (SELECT entry, average_price, max(scan_datetime)
+                    FROM {}.mod_auctionator_market_price
+                    GROUP BY entry
+                ) mp ON it.entry = mp.entry
         WHERE
             -- filter out items from the disabled table
             dis.item IS NULL
@@ -121,10 +129,16 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
         float qualityMultiplier = Auctionator::GetQualityMultiplier(multiplierConfig, quality);
 
         uint32 price = fields[2].Get<uint32>();
+        uint32 marketPrice = fields[5].Get<uint32>();
+        if (marketPrice > 0) {
+            nator->logInfo("Using Market over Template [" + itemName + "] " +
+                std::to_string(marketPrice) + " <--> " + std::to_string(price));
+            price = marketPrice;
+        }
+
         if (price == 0) {
             price = 10000000 * qualityMultiplier;
         }
-
 
         AuctionatorItem newItem = AuctionatorItem();
         newItem.itemId = fields[0].Get<uint32>();
