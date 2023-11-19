@@ -46,8 +46,8 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
             , it.name
             , it.BuyPrice
             , it.stackable
-            , aicconf.stack_count
             , it.quality
+            , mp.average_price
         FROM
             mod_auctionator_itemclass_config aicconf
             LEFT JOIN item_template it ON
@@ -74,6 +74,7 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
                 WHERE ah.houseId = {}
                 GROUP BY ii.itemEntry, it.name
             ) ic ON ic.itemEntry = it.entry
+            LEFT JOIN {}.mod_auctionator_market_price mp ON it.entry = mp.entry
         WHERE
             -- filter out items from the disabled table
             dis.item IS NULL
@@ -94,6 +95,7 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
         itemQuery,
         characterDbName,
         houseId,
+        characterDbName,
         queryLimit
     );
 
@@ -102,51 +104,6 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
         nator->logDebug("No results for LetsGo item query");
         return;
     }
-
-    // shuffle result to get more randomness
-    // Extract rows from QueryResult into a vector
-    // std::vector<Field*> rows;
-
-    // do {
-    //     rows.push_back(result->Fetch());
-    // } while (result->NextRow());
-    // nator->logInfo(std::to_string(result->GetRowCount()) + ":" + std::to_string(rows.size()) );
-
-    // // Shuffle the vector
-    // std::random_device rd;
-    // std::mt19937 g(rd());
-    // std::shuffle(rows.begin(), rows.end(), g);
-
-    // uint32 count = 0;
-    // for (Field* row : rows) {
-    //     count++;
-    //     nator->logInfo("Item time: " + std::to_string(count));
-    //     std::string itemName = row[1].Get<std::string>();
-
-    //     uint32 stackSize = row[4].Get<uint32>();
-
-    //     uint32 price = row[2].Get<uint32>();
-    //     if (price == 0) {
-    //         price = 10000000;
-    //     }
-
-    //     AuctionatorItem newItem = AuctionatorItem();
-    //     newItem.itemId = row[0].Get<uint32>();
-    //     newItem.quantity = 1;
-    //     newItem.buyout = price * stackSize;
-    //     newItem.time = 60 * 60 * 12;
-    //     newItem.stackSize = stackSize;
-
-    //     nator->logDebug("Adding item: " + itemName
-    //         + " with quantity of " + std::to_string(newItem.quantity)
-    //         + " at price of " +  std::to_string(newItem.buyout)
-    //         + " to house " + std::to_string(houseId)
-    //     );
-
-    //     if (count == maxCount) {
-    //         break;
-    //     }
-    // }
 
     AuctionatorPriceMultiplierConfig multiplierConfig = nator->config->multipliers;
     uint32 count = 0;
@@ -158,9 +115,9 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
         // TODO: refactor listing an item into a testable method
         std::string itemName = fields[1].Get<std::string>();
 
-        uint32 stackSize = fields[4].Get<uint32>();
+        uint32 stackSize = fields[3].Get<uint32>();
 
-        uint32 quality = fields[5].Get<uint32>();
+        uint32 quality = fields[4].Get<uint32>();
         float qualityMultiplier = Auctionator::GetQualityMultiplier(multiplierConfig, quality);
 
         uint32 price = fields[2].Get<uint32>();

@@ -1,20 +1,20 @@
 SELECT
 	it.entry
 	, it.name
-	, aic.name as classname
-	, aic2.name as subclassname
+	, aic.name AS classname
+	, aic2.name AS subclassname
 	, aiq.name
 	, it.RequiredLevel 
 	, it.BuyPrice 
 FROM
 	item_template it
 LEFT JOIN auctionator_item_class aic ON it.class = aic.class AND aic.subclass IS NULL
-LEFT JOIN auctionator_item_class aic2 on it.class = aic2.class AND it.subclass = aic2.subclass
+LEFT JOIN auctionator_item_class aic2 ON it.class = aic2.class AND it.subclass = aic2.subclass
 LEFT JOIN auctionator_item_quality aiq ON it.Quality = aiq.quality
 WHERE
 	1
 --	AND aic2.name LIKE '%container%'
-	AND it.name like '%turalyon%'
+	AND it.name LIKE '%turalyon%'
 --	AND it.class = 15
 --	AND it.subclass = 3
 LIMIT 1000;
@@ -30,9 +30,9 @@ SELECT
 	, ah.buyoutprice
 FROM acore_characters.auctionhouse ah
 LEFT JOIN acore_characters.item_instance ii ON ah.itemguid = ii.guid 
-LEFT JOIN acore_world.item_template it on ii.itemEntry = it.entry
+LEFT JOIN acore_world.item_template it ON ii.itemEntry = it.entry
 LEFT JOIN acore_world.auctionator_item_class aic ON it.class = aic.class AND aic.subclass IS NULL
-LEFT JOIN acore_world.auctionator_item_class aic2 on it.class = aic2.class AND it.subclass = aic2.subclass
+LEFT JOIN acore_world.auctionator_item_class aic2 ON it.class = aic2.class AND it.subclass = aic2.subclass
 LEFT JOIN acore_world.auctionator_item_quality aiq ON it.Quality = aiq.quality
 LIMIT 10000;
 
@@ -43,15 +43,15 @@ SELECT
     , it.bonding
     , it.name
     , aic.class
-    , aic.name as classname
+    , aic.name AS classname
 	, aic2.subclass
-    , aic2.name as subclassname
+    , aic2.name AS subclassname
     , aiq.name
     , it.RequiredLevel 
 FROM
     item_template it
 LEFT JOIN auctionator_item_class aic ON it.class = aic.class AND aic.subclass IS NULL
-LEFT JOIN auctionator_item_class aic2 on it.class = aic2.class AND it.subclass = aic2.subclass
+LEFT JOIN auctionator_item_class aic2 ON it.class = aic2.class AND it.subclass = aic2.subclass
 LEFT JOIN auctionator_item_quality aiq ON it.Quality = aiq.quality
 WHERE
     1
@@ -85,6 +85,7 @@ SELECT
 	, it.BuyPrice 
 	, it. stackable
 	, aicconf.stack_count
+	, mp.avg_price
 --	, ic.itemCount
 --	, aicconf.max_count
 --	, it.bonding 
@@ -126,13 +127,13 @@ FROM
             it.bonding >= aicconf.bonding
             OR it.bonding = 0
         )
-    LEFT JOIN acore_world.mod_auctionator_disabled_items dis on it.Entry = dis.item
+    LEFT JOIN acore_world.mod_auctionator_disabled_items dis ON it.Entry = dis.item
 	LEFT JOIN (
 		-- this sub query lets us get the current count of each item already in the AH
 		-- so that we can filter out any items where itemCount >= max_count and not add
 		-- anymore of them.
 		SELECT
-			count(ii.itemEntry) as itemCount
+			COUNT(ii.itemEntry) AS itemCount
 			, ii.itemEntry AS itemEntry
 		FROM
 			acore_characters.item_instance ii 
@@ -140,6 +141,7 @@ FROM
 			LEFT JOIN acore_world.item_template it ON ii.itemEntry = it.entry 
 		GROUP BY ii.itemEntry, it.name
 	) ic ON ic.itemEntry = it.entry
+    LEFT JOIN acore_characters.mod_auctionator_market_prices mp ON it.entry = mp.entry
 WHERE
     -- filter out items from the disabled table
     dis.item IS NULL
