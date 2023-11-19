@@ -8,13 +8,13 @@ SELECT
 	, it.BuyPrice 
 FROM
 	item_template it
-LEFT JOIN auctionator_item_class aic ON it.class = aic.class AND aic.subclass IS NULL
-LEFT JOIN auctionator_item_class aic2 on it.class = aic2.class AND it.subclass = aic2.subclass
-LEFT JOIN auctionator_item_quality aiq ON it.Quality = aiq.quality
+LEFT JOIN mod_auctionator_item_class aic ON it.class = aic.class AND aic.subclass IS NULL
+LEFT JOIN mod_auctionator_item_class aic2 on it.class = aic2.class AND it.subclass = aic2.subclass
+LEFT JOIN mod_auctionator_item_quality aiq ON it.Quality = aiq.quality
 WHERE
 	1
 --	AND aic2.name LIKE '%container%'
-	AND it.name like '%turalyon%'
+	AND it.name like '%badge %'
 --	AND it.class = 15
 --	AND it.subclass = 3
 LIMIT 1000;
@@ -273,3 +273,4 @@ FROM
 	INNER JOIN acore_characters.item_instance ii ON mi.item_guid = ii.guid 
 	INNER JOIN acore_world.item_template it ON ii.itemEntry = it.entry 
 ;
+
