@@ -131,7 +131,7 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
         uint32 price = fields[2].Get<uint32>();
         uint32 marketPrice = fields[5].Get<uint32>();
         if (marketPrice > 0) {
-            nator->logInfo("Using Market over Template [" + itemName + "] " +
+            nator->logDebug("Using Market over Template [" + itemName + "] " +
                 std::to_string(marketPrice) + " <--> " + std::to_string(price));
             price = marketPrice;
         }

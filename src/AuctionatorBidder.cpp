@@ -23,7 +23,12 @@ void AuctionatorBidder::SpendSomeCash()
 {
     uint32 auctionatorPlayerGuid = buyerGuid.GetRawValue();
 
-    std::string query = "SELECT id FROM auctionhouse WHERE itemowner <> {} AND houseid = {}; ";
+    std::string query = R"(
+        SELECT
+            ah.id
+        FROM auctionhouse ah
+        WHERE itemowner <> {} AND houseid = {};
+    )";
 
     // for testing we may want to bid on our own auctions.
     // if we do we set the ownerToSkip to 0 so we will pick
@@ -145,7 +150,7 @@ bool AuctionatorBidder::BidOnAuction(AuctionEntry* auction, ItemTemplate const* 
     uint32 buyPrice = CalculateBuyPrice(auction, itemTemplate);
 
     // decide if our bid is less than the max amount we want to pay to avoid overpaying
-    // for an item. 
+    // for an item.
     if (currentPrice > buyPrice) {
         logInfo("Skipping auction ("
             + std::to_string(auction->Id) + "), price of "
@@ -248,15 +253,42 @@ uint32 AuctionatorBidder::GetAuctionsPerCycle()
 
 uint32 AuctionatorBidder::CalculateBuyPrice(AuctionEntry* auction, ItemTemplate const* item)
 {
+    // get our market price for this item.
+    uint32 marketPrice = 0;
+    std::string query = R"(
+        SELECT
+            entry
+            , average_price
+            , max(scan_datetime)
+        FROM {}.mod_auctionator_market_price
+        WHERE entry = {}
+        GROUP BY entry
+    )";
+    QueryResult result = CharacterDatabase.Query(query, item->ItemId);
+
+    if (result) {
+        marketPrice = result->Fetch()[1].Get<uint32>();
+    }
+
+    // get the stack size of the item.
     uint32 stackSize = 1;
     if (item->GetMaxStackSize() > 1 && auction->itemCount > 1) {
         stackSize = auction->itemCount;
     }
 
+    // get our miltiplier configuration so we can get the right quality multiplier.
     AuctionatorPriceMultiplierConfig multiplierConfig = config->multipliers;
-
     uint32 quality  = item->Quality;
     float qualityMultiplier = Auctionator::GetQualityMultiplier(multiplierConfig, quality);
 
-    return uint32(stackSize * item->BuyPrice * qualityMultiplier);
+    // figure out if we are using our itemtemplate->BuyPrice or market price.
+    uint32 price = item->BuyPrice;
+    if (marketPrice > 0) {
+        logInfo("Using Market over Template for bid eval [" + item->Name1 + "] " +
+            std::to_string(marketPrice) + " <--> " + std::to_string(price));
+        price = marketPrice;
+    }
+
+    // calculate the max price we will pay for this item stack.
+    return uint32(stackSize * price * qualityMultiplier);
 }
