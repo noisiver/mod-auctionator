@@ -260,7 +260,7 @@ uint32 AuctionatorBidder::CalculateBuyPrice(AuctionEntry* auction, ItemTemplate 
             entry
             , average_price
             , max(scan_datetime)
-        FROM {}.mod_auctionator_market_price
+        FROM mod_auctionator_market_price
         WHERE entry = {}
         GROUP BY entry
     )";
@@ -285,7 +285,8 @@ uint32 AuctionatorBidder::CalculateBuyPrice(AuctionEntry* auction, ItemTemplate 
     uint32 price = item->BuyPrice;
     if (marketPrice > 0) {
         logInfo("Using Market over Template for bid eval [" + item->Name1 + "] " +
-            std::to_string(marketPrice) + " <--> " + std::to_string(price));
+            std::to_string(marketPrice) + " <--> " + std::to_string(price) +
+            " with multiplier of " + std::to_string(qualityMultiplier) + "x");
         price = marketPrice;
     }
 
