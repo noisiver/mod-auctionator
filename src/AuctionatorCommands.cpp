@@ -140,13 +140,21 @@ help
             statusString += "        Cycle Time: " + std::to_string(auctionator->config->neutralBidder.cycleMinutes) + "\n";
             statusString += "        Per Cycle: " + std::to_string(auctionator->config->neutralBidder.maxPerCycle) + "\n";
 
-            statusString += " Multipliers:\n";
-            statusString += "    Poor: " + std::to_string(auctionator->config->multipliers.poor) + "\n";
-            statusString += "    Normal: " + std::to_string(auctionator->config->multipliers.normal) + "\n";
-            statusString += "    Uncommon: " + std::to_string(auctionator->config->multipliers.uncommon) + "\n";
-            statusString += "    Rare: " + std::to_string(auctionator->config->multipliers.rare) + "\n";
-            statusString += "    Epic: " + std::to_string(auctionator->config->multipliers.epic) + "\n";
-            statusString += "    Legendary: " + std::to_string(auctionator->config->multipliers.legendary) + "\n";
+            statusString += " Seller Multipliers:\n";
+            statusString += "    Poor: " + std::to_string(auctionator->config->sellerMultipliers.poor) + "\n";
+            statusString += "    Normal: " + std::to_string(auctionator->config->sellerMultipliers.normal) + "\n";
+            statusString += "    Uncommon: " + std::to_string(auctionator->config->sellerMultipliers.uncommon) + "\n";
+            statusString += "    Rare: " + std::to_string(auctionator->config->sellerMultipliers.rare) + "\n";
+            statusString += "    Epic: " + std::to_string(auctionator->config->sellerMultipliers.epic) + "\n";
+            statusString += "    Legendary: " + std::to_string(auctionator->config->sellerMultipliers.legendary) + "\n";
+
+            statusString += " Bidder Multipliers:\n";
+            statusString += "    Poor: " + std::to_string(auctionator->config->bidderMultipliers.poor) + "\n";
+            statusString += "    Normal: " + std::to_string(auctionator->config->bidderMultipliers.normal) + "\n";
+            statusString += "    Uncommon: " + std::to_string(auctionator->config->bidderMultipliers.uncommon) + "\n";
+            statusString += "    Rare: " + std::to_string(auctionator->config->bidderMultipliers.rare) + "\n";
+            statusString += "    Epic: " + std::to_string(auctionator->config->bidderMultipliers.epic) + "\n";
+            statusString += "    Legendary: " + std::to_string(auctionator->config->bidderMultipliers.legendary) + "\n";
 
             statusString += " Seller settings:\n";
             statusString += "    Query Limit: " + std::to_string(auctionator->config->sellerConfig.queryLimit) + "\n";
@@ -273,12 +281,17 @@ help
 
         static bool CommandSetMultiplier(const char** params, ChatHandler* handler, Auctionator* auctionator)
         {
-            if(!params[0]) {
+            if (!params[0]) {
+                handler->SendSysMessage("[Auctionator] multiplier: No type specified! [seller, bidder]");
+                auctionator->logInfo("multiplier: No type specified");
+            }
+
+            if (!params[1]) {
                 handler->SendSysMessage("[Auctionator] multiplier: No quality specified! [poor, normal, uncommon, rare, epic, legendary]");
                 auctionator->logInfo("multiplier: No quality specified");
             }
 
-            if(!params[1]) {
+            if (!params[2]) {
                 handler->SendSysMessage("[Auctionator] multiplier: No multiplier specified!");
                 auctionator->logInfo("multiplier: No multiplier specified Specified!");
             }
@@ -287,29 +300,44 @@ help
                 return true;
             }
 
-            std::string quality(params[0]);
-            uint32 newMultiplier = std::stoi(params[1]);
+            std::string type(params[0]);
+            std::string quality(params[1]);
+            uint32 newMultiplier = std::stoi(params[2]);
 
-            AuctionatorPriceMultiplierConfig* multipliers = &auctionator->config->multipliers;
+            AuctionatorPriceMultiplierConfig* multipliers;
+            
+            if (type == "seller") {
+                multipliers = &auctionator->config->sellerMultipliers;
+            } else if (type == "bidder") {
+                multipliers = &auctionator->config->bidderMultipliers;
+            }
 
-            if(quality == "poor") {
+            bool success = false;
+
+            if (quality == "poor") {
                 multipliers->poor = newMultiplier;
-                handler->SendSysMessage("[Auctionator] multiplier: Poor quality multiplier set to " + std::to_string(newMultiplier));
+                success = true;
             } else if (quality == "normal") {
                 multipliers->normal = newMultiplier;
-                handler->SendSysMessage("[Auctionator] multiplier: Normal quality multiplier set to " + std::to_string(newMultiplier));
+                success = true;
             } else if (quality == "uncommon") {
                 multipliers->uncommon = newMultiplier;
-                handler->SendSysMessage("[Auctionator] multiplier: Uncommon quality multiplier set to " + std::to_string(newMultiplier));
+                success = true;
             } else if (quality == "rare") {
                 multipliers->rare = newMultiplier;
-                handler->SendSysMessage("[Auctionator] multiplier: Rare quality multiplier set to " + std::to_string(newMultiplier));
+                success = true;
             } else if (quality == "epic") {
                 multipliers->epic = newMultiplier;
-                handler->SendSysMessage("[Auctionator] multiplier: Epic quality multiplier set to " + std::to_string(newMultiplier));
+                success = true;
             } else if (quality == "legendary") {
                 multipliers->legendary = newMultiplier;
-                handler->SendSysMessage("[Auctionator] multiplier: Legendary quality multiplier set to " + std::to_string(newMultiplier));
+                success = true;
+            }
+
+            if (success) {
+                handler->SendSysMessage("[Auctionator] " + type + 
+                    " multiplier: " + quality + " quality multiplier set to "
+                    + std::to_string(newMultiplier));
             }
 
             return true;

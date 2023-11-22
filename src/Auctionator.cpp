@@ -221,19 +221,33 @@ void Auctionator::InitializeConfig(ConfigMgr* configMgr)
 
     config->bidOnOwn = configMgr->GetOption<uint32>("Auctionator.Bidder.BidOnOwn", 0);
 
-    // load out multipliers for buy/sell prices
-    config->multipliers.poor
-        = configMgr->GetOption<float>("Auctionator.Multipliers.Poor", 1.0f);
-    config->multipliers.normal
-        = configMgr->GetOption<float>("Auctionator.Multipliers.Normal", 1.0f);
-    config->multipliers.uncommon
-        = configMgr->GetOption<float>("Auctionator.Multipliers.Uncommon", 1.5f);
-    config->multipliers.rare
-        = configMgr->GetOption<float>("Auctionator.Multipliers.Rare", 2.0f);
-    config->multipliers.epic
-        = configMgr->GetOption<float>("Auctionator.Multipliers.Epic", 6.0f);
-    config->multipliers.legendary
-        = configMgr->GetOption<float>("Auctionator.Multipliers.Legendary", 10.0f);
+    // load out multipliers for seller prices
+    config->sellerMultipliers.poor
+        = configMgr->GetOption<float>("Auctionator.Multipliers.Seller.Poor", 1.0f);
+    config->sellerMultipliers.normal
+        = configMgr->GetOption<float>("Auctionator.Multipliers.Seller.Normal", 1.0f);
+    config->sellerMultipliers.uncommon
+        = configMgr->GetOption<float>("Auctionator.Multipliers.Seller.Uncommon", 1.5f);
+    config->sellerMultipliers.rare
+        = configMgr->GetOption<float>("Auctionator.Multipliers.Seller.Rare", 2.0f);
+    config->sellerMultipliers.epic
+        = configMgr->GetOption<float>("Auctionator.Multipliers.Seller.Epic", 6.0f);
+    config->sellerMultipliers.legendary
+        = configMgr->GetOption<float>("Auctionator.Multipliers.Seller.Legendary", 10.0f);
+
+    // load out multipliers for bidder prices
+    config->bidderMultipliers.poor
+        = configMgr->GetOption<float>("Auctionator.Multipliers.Bidder.Poor", 1.0f);
+    config->bidderMultipliers.normal
+        = configMgr->GetOption<float>("Auctionator.Multipliers.Bidder.Normal", 1.0f);
+    config->bidderMultipliers.uncommon
+        = configMgr->GetOption<float>("Auctionator.Multipliers.Bidder.Uncommon", 1.5f);
+    config->bidderMultipliers.rare
+        = configMgr->GetOption<float>("Auctionator.Multipliers.Bidder.Rare", 2.0f);
+    config->bidderMultipliers.epic
+        = configMgr->GetOption<float>("Auctionator.Multipliers.Bidder.Epic", 6.0f);
+    config->bidderMultipliers.legendary
+        = configMgr->GetOption<float>("Auctionator.Multipliers.Bidder.Legendary", 10.0f);
 
     logInfo("Auctionator config initialized");
 }
@@ -373,17 +387,17 @@ float Auctionator::GetQualityMultiplier(AuctionatorPriceMultiplierConfig config,
 {
     switch(quality) {
         case ITEM_QUALITY_POOR:
-            return 1;
+            return config.poor;
         case ITEM_QUALITY_NORMAL:
-            return 1;
+            return config.normal;
         case ITEM_QUALITY_UNCOMMON:
-            return 1.5;
+            return config.uncommon;
         case ITEM_QUALITY_RARE:
-            return 2;
+            return config.rare;
         case ITEM_QUALITY_EPIC:
-            return 6;
+            return config.epic;
         case ITEM_QUALITY_LEGENDARY:
-            return 10;
+            return config.legendary;
         default:
             return 1;
     }

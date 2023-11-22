@@ -56,7 +56,8 @@ class AuctionatorConfig
         AuctionatorBidderConfig hordeBidder;
         AuctionatorBidderConfig neutralBidder;
 
-        AuctionatorPriceMultiplierConfig multipliers;
+        AuctionatorPriceMultiplierConfig sellerMultipliers;
+        AuctionatorPriceMultiplierConfig bidderMultipliers;
 
         AuctionatorSellerConfig sellerConfig;
 

@@ -113,7 +113,7 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
         return;
     }
 
-    AuctionatorPriceMultiplierConfig multiplierConfig = nator->config->multipliers;
+    AuctionatorPriceMultiplierConfig multiplierConfig = nator->config->sellerMultipliers;
     uint32 count = 0;
     do
     {

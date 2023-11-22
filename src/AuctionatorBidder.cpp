@@ -277,7 +277,7 @@ uint32 AuctionatorBidder::CalculateBuyPrice(AuctionEntry* auction, ItemTemplate 
     }
 
     // get our miltiplier configuration so we can get the right quality multiplier.
-    AuctionatorPriceMultiplierConfig multiplierConfig = config->multipliers;
+    AuctionatorPriceMultiplierConfig multiplierConfig = config->bidderMultipliers;
     uint32 quality  = item->Quality;
     float qualityMultiplier = Auctionator::GetQualityMultiplier(multiplierConfig, quality);
 

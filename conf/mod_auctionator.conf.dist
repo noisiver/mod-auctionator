@@ -74,14 +74,24 @@ Auctoinator.Seller.DefaultPrice = 10000000
 Auctionator.Bidder.BidOnOwn = 0
 
 ########################################
-# Multipliers for seller and bidder prices
+# Multipliers for seller
 ########################################
-Auctionator.Multipliers.Poor = 1.0
-Auctionator.Multipliers.Normal = 1.0
-Auctionator.Multipliers.Uncommon = 1.5
-Auctionator.Multipliers.Rare = 2.0
-Auctionator.Multipliers.Epic = 6.0
-Auctionator.Multipliers.Legendary = 10.0
+Auctionator.Multipliers.Seller.Poor = 1.0
+Auctionator.Multipliers.Seller.Normal = 1.0
+Auctionator.Multipliers.Seller.Uncommon = 1.5
+Auctionator.Multipliers.Seller.Rare = 2.0
+Auctionator.Multipliers.Seller.Epic = 6.0
+Auctionator.Multipliers.Seller.Legendary = 10.0
+
+########################################
+# Multipliers for bidder prices
+########################################
+Auctionator.Multipliers.Bidder.Poor = 1.0
+Auctionator.Multipliers.Bidder.Normal = 1.0
+Auctionator.Multipliers.Bidder.Uncommon = 1.5
+Auctionator.Multipliers.Bidder.Rare = 2.0
+Auctionator.Multipliers.Bidder.Epic = 6.0
+Auctionator.Multipliers.Bidder.Legendary = 10.0
 
 ###################################################################################################
 # LOGGING SYSTEM SETTINGS
