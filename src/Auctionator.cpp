@@ -12,6 +12,7 @@
 #include "AuctionatorSeller.h"
 #include "AuctionatorBidder.h"
 #include "AuctionatorEvents.h"
+#include "AuctionatorStructs.h"
 #include "EventMap.h"
 #include <vector>
 
@@ -22,9 +23,16 @@ Auctionator::Auctionator()
     Initialize();
 
     logInfo("Event init");
+
+    AuctionatorHouses* houses = new AuctionatorHouses();
+    houses->HordeAh = HordeAh;
+    houses->AllianceAh = AllianceAh;
+    houses->NeutralAh = NeutralAh;
+
     ObjectGuid buyerGuid = ObjectGuid::Create<HighGuid::Player>(config->characterGuid);
     events = AuctionatorEvents(config);
     events.SetPlayerGuid(buyerGuid);
+    events.SetHouses(houses);
 };
 
 Auctionator::~Auctionator()
@@ -263,7 +271,7 @@ void Auctionator::Update()
     logInfo("Alliance count: " + std::to_string(AllianceAh->Getcount()));
     logInfo("Horde count: " + std::to_string(HordeAh->Getcount()));
 
-
+/*
     if (config->allianceSeller.enabled) {
         AuctionatorSeller sellerAlliance =
             AuctionatorSeller(gAuctionator, static_cast<uint32>(AUCTIONHOUSE_ALLIANCE));
@@ -326,6 +334,7 @@ void Auctionator::Update()
     } else {
         logInfo("Neutral Seller Disabled");
     }
+*/
 
     logInfo("UpdatingEvents");
     events.Update(1);

@@ -9,6 +9,7 @@
 
 AuctionatorSeller::AuctionatorSeller(Auctionator* natorParam, uint32 auctionHouseIdParam)
 {
+    SetLogPrefix("[AuctionatorSeller] ");
     nator = natorParam;
     auctionHouseId = auctionHouseIdParam;
 
@@ -114,7 +115,7 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
 
     if (!result)
     {
-        nator->logDebug("No results for LetsGo item query");
+        logDebug("No results for LetsGo item query");
         return;
     }
 
@@ -136,7 +137,7 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
         uint32 price = fields[2].Get<uint32>();
         uint32 marketPrice = fields[5].Get<uint32>();
         if (marketPrice > 0) {
-            nator->logDebug("Using Market over Template [" + itemName + "] " +
+            logDebug("Using Market over Template [" + itemName + "] " +
                 std::to_string(marketPrice) + " <--> " + std::to_string(price));
             price = marketPrice;
         }
@@ -152,7 +153,7 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
         newItem.time = 60 * 60 * 12;
         newItem.stackSize = stackSize;
 
-        nator->logDebug("Adding item: " + itemName
+        logDebug("Adding item: " + itemName
             + " with quantity of " + std::to_string(newItem.quantity)
             + " at price of " +  std::to_string(newItem.buyout)
             + " to house " + std::to_string(houseId)
@@ -165,7 +166,7 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
         }
     } while (result->NextRow());
 
-    nator->logInfo("Items added houseId("
+    logInfo("Items added houseId("
         + std::to_string(houseId)
         + ") this run: " + std::to_string(count));
 

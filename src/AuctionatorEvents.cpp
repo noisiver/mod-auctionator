@@ -1,6 +1,7 @@
 
 #include "AuctionatorEvents.h"
 #include "AuctionatorBidder.h"
+#include "AuctionatorSeller.h"
 #include "Log.h"
 #include <functional>
 
@@ -32,7 +33,10 @@ void AuctionatorEvents::InitializeEvents()
     eventToFunction = {
             {1, "AllianceBidder"},
             {2, "HordeBidder"},
-            {3, "NeutralBidder"}
+            {3, "NeutralBidder"},
+            {4, "AllianceSeller"},
+            {5, "HordeSeller"},
+            {6, "NeutralSeller"}
         };
     //
     // schedule the events for our bidders
@@ -49,6 +53,18 @@ void AuctionatorEvents::InitializeEvents()
     // NeutralBidder
     if (config->neutralBidder.enabled) {
         events.ScheduleEvent(3, config->neutralBidder.cycleMinutes);
+    }
+
+    if (config->allianceSeller.enabled) {
+        events.ScheduleEvent(4, 1);
+    }
+
+    if (config->hordeSeller.enabled) {
+        events.ScheduleEvent(5, 1);
+    }
+
+    if (config->neutralSeller.enabled) {
+        events.ScheduleEvent(6, 1);
     }
 }
 
@@ -84,6 +100,24 @@ void AuctionatorEvents::ExecuteEvents()
                             events.ScheduleEvent(currentEvent, config->neutralBidder.cycleMinutes);
                         }
                         break;
+                    case 4:
+                        EventAllianceSeller();
+                        if (config->allianceSeller.enabled) {
+                            events.ScheduleEvent(currentEvent, 1);
+                        }
+                        break;
+                    case 5:
+                        EventHordeSeller();
+                        if (config->hordeSeller.enabled) {
+                            events.ScheduleEvent(currentEvent, 1);
+                        }
+                        break;
+                    case 6:
+                        EventNeutralSeller();
+                        if (config->neutralSeller.enabled) {
+                            events.ScheduleEvent(currentEvent, 1);
+                        }
+                        break;
                 }
             } catch(const std::exception& e) {
                 logError("Issue calling handler");
@@ -106,6 +140,11 @@ void AuctionatorEvents::SetPlayerGuid(ObjectGuid playerGuid)
     auctionatorGuid = playerGuid;
 }
 
+void AuctionatorEvents::SetHouses(AuctionatorHouses* auctionatorHouses)
+{
+    houses = auctionatorHouses;
+}
+
 void AuctionatorEvents::EventAllianceBidder()
 {
     logInfo("Starting Alliance Bidder");
@@ -125,6 +164,67 @@ void AuctionatorEvents::EventNeutralBidder()
     logInfo("Starting Neutral Bidder");
     AuctionatorBidder bidder = AuctionatorBidder(AUCTIONHOUSE_NEUTRAL, auctionatorGuid, config);
     bidder.SpendSomeCash();
+}
+
+void AuctionatorEvents::EventAllianceSeller()
+{
+    AuctionatorSeller sellerAlliance =
+        AuctionatorSeller(gAuctionator, static_cast<uint32>(AUCTIONHOUSE_ALLIANCE));
+
+    uint32 auctionCountAlliance = houses->AllianceAh->Getcount();
+
+    if (auctionCountAlliance <= config->allianceSeller.maxAuctions) {
+        logInfo(
+            "Alliance count is good, here we go: "
+            + std::to_string(auctionCountAlliance)
+            + " of " + std::to_string(config->allianceSeller.maxAuctions)
+        );
+
+        sellerAlliance.LetsGetToIt(100, AUCTIONHOUSE_ALLIANCE);
+    } else {
+        logInfo("Alliance count over max: " + std::to_string(auctionCountAlliance));
+    }
+    
+}
+
+void AuctionatorEvents::EventHordeSeller()
+{
+    AuctionatorSeller sellerHorde =
+        AuctionatorSeller(gAuctionator, static_cast<uint32>(AUCTIONHOUSE_HORDE));
+
+    uint32 auctionCountHorde = houses->HordeAh->Getcount();
+
+    if (auctionCountHorde <= config->hordeSeller.maxAuctions) {
+        logInfo(
+            "Horde count is good, here we go: "
+            + std::to_string(auctionCountHorde)
+            + " of " + std::to_string(config->hordeSeller.maxAuctions)
+        );
+
+        sellerHorde.LetsGetToIt(100, AUCTIONHOUSE_HORDE);
+    } else {
+        logInfo("Horde count over max: " + std::to_string(auctionCountHorde));
+    }
+}
+
+void AuctionatorEvents::EventNeutralSeller()
+{
+    AuctionatorSeller sellerNeutral =
+        AuctionatorSeller(gAuctionator, static_cast<uint32>(AUCTIONHOUSE_NEUTRAL));
+
+    uint32 auctionCountNeutral = houses->NeutralAh->Getcount();
+
+    if (auctionCountNeutral <= config->neutralSeller.maxAuctions) {
+        logInfo(
+            "Neutral count is good, here we go: "
+            + std::to_string(auctionCountNeutral)
+            + " of " + std::to_string(config->neutralSeller.maxAuctions)
+        );
+
+        sellerNeutral.LetsGetToIt(100, AUCTIONHOUSE_NEUTRAL);
+    } else {
+        logInfo("Neutral count over max: " + std::to_string(auctionCountNeutral));
+    }
 }
 
 EventMap AuctionatorEvents::GetEvents()

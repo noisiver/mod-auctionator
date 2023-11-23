@@ -5,7 +5,7 @@
 #include "Auctionator.h"
 #include "AuctionHouseMgr.h"
 
-class AuctionatorSeller
+class AuctionatorSeller : public AuctionatorBase
 {
     private:
         Auctionator* nator;
