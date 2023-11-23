@@ -7,5 +7,5 @@ CREATE TABLE IF NOT EXISTS `mod_auctionator_market_price` (
     `count` INT,
     `scan_datetime` DATETIME,
     PRIMARY KEY (`entry`),
-    Index(`entry`)
+    Index(`entry`, `scan_datetime`)
 );

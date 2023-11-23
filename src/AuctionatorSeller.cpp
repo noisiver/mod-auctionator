@@ -79,9 +79,9 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
                 -- price for each item. Not sure this is doing what I want but it
                 -- seems to be working at the moment. If you aren't always getting
                 -- the newest price look here.
-                (SELECT entry, average_price, max(scan_datetime)
+                (
+                    SELECT entry, average_price, scan_datetime
                     FROM {}.mod_auctionator_market_price
-                    GROUP BY entry
                 ) mp ON it.entry = mp.entry
         WHERE
             -- filter out items from the disabled table
@@ -94,6 +94,13 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
             -- filter out items where we are already at or above max_count for uniques in this class to limit dups
             AND (ic.itemCount IS NULL OR ic.itemCount < aicconf.max_count)
             AND VerifiedBuild != 1
+            AND (mp.scan_datetime = 
+                (
+                    SELECT max(scan_datetime)
+                    FROM acore_characters.mod_auctionator_market_price
+                    WHERE entry = it.entry
+                ) OR mp.scan_datetime IS NULL
+            )
         ORDER BY RAND()
         LIMIT {}
         ;

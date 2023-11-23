@@ -259,10 +259,11 @@ uint32 AuctionatorBidder::CalculateBuyPrice(AuctionEntry* auction, ItemTemplate 
         SELECT
             entry
             , average_price
-            , max(scan_datetime)
+            , scan_datetime
         FROM mod_auctionator_market_price
         WHERE entry = {}
-        GROUP BY entry
+        ORDER BY scan_datetime DESC
+        LIMIT 1
     )";
     QueryResult result = CharacterDatabase.Query(query, item->ItemId);
 

@@ -16,6 +16,10 @@ fs.createReadStream(filename)
     if (counter === 0) {
       outputHeader();
     }
+
+    if (counter !== 0) {
+      console.log(",");
+    }
     console.log(
       "(",
       row[1], ",",
@@ -26,15 +30,18 @@ fs.createReadStream(filename)
       "'", row[0], "')"
     );
     counter++;
-    if (counter !== 100) {
-      console.log(",");
-    }
+    // if (counter !== 100) {
+    //   console.log(",");
+    // }
 
     if (counter === 100) {
       console.log(";");
       counter = 0;
     }
-  });
+  })
+  .on("end", function() {
+    console.log(";");
+   });
 
 function outputHeader() {
 
