@@ -155,8 +155,29 @@ Output:
     Default Price: 10000000
 ```
 
+## Importing Marketplace Data (v0.6)
+
+There is a helper script in `mod-auctionator/apps/marketprices` for creating the sql to import the market data from a csv. You need to start the server first to make sure that the `mod_auctionator_market_price` table has been created. Using a newer version of Node (18+ should do it) you can generate insert queries that you can pipe to mysql something like this:
+
+```
+cd apps/marketprice
+cp ~/mypricedata.csv .
+
+# only need to do this the first time
+npm install
+node index.js mypricedata.csv | mysql -u <dbuser> -p <character_database_name>
+```
+
+The script skips the first line and expects the following columns:
+
+```
+scan_datetime,item_entry,avg_price,minimum_buyout,minimum_bid,item_count
+```
+
+minimum_buyout, minimum_bid, and item_count are currently not used for anything and can be set to 0.
+
 ## Current limitations
 
-1. Stacks are acting weird, especially things like enchanter rods.
+1. ~~Stacks are acting weird, especially things like enchanter rods.~~ This is now fixed BUT many stacks with the multipler are maxed out now to 20 and way to expensive. Whoopsie.
 2. No control on stack size, it is hard coded to 20 (you can edit and recompile).
 3. No control over item ranges (you can change the query).
