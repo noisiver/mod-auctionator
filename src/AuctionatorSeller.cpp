@@ -83,14 +83,14 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
                         DISTINCT(mpp.entry),
                         mpa.average_price
                     FROM {}.mod_auctionator_market_price mpp
-                    LEFT JOIN (
+                    INNER JOIN (
                         SELECT
                             max(scan_datetime) AS scan,
                             entry
                         FROM {}.mod_auctionator_market_price
                         GROUP BY entry
                     ) mps ON mpp.entry = mps.entry
-                    LEFT JOIN
+                    INNER JOIN
                         {}.mod_auctionator_market_price mpa
                         ON mpa.entry = mpp.entry
                         AND mpa.scan_datetime = mps.scan
