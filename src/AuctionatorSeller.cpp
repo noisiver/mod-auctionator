@@ -76,28 +76,35 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
                 GROUP BY ii.itemEntry, it.name
             ) ic ON ic.itemEntry = it.entry
             LEFT JOIN
-                -- We are doing some uglyness here to try to get the latest market
-                -- price for each item. Not sure this is doing what I want but it
-                -- seems to be working at the moment. If you aren't always getting
-                -- the newest price look here.
+                -- get the newest prices for our items that we have in our
+                -- market price table.
                 (
-                    SELECT entry, average_price, scan_datetime
-                    FROM {}.mod_auctionator_market_price mpi
-                    WHERE mpi.scan_datetime = (
-                        SELECT MAX(scan_datetime) 
-                        FROM acore_characters.mod_auctionator_market_price
-                        WHERE entry = mpi.entry
-                    )
+                    SELECT
+                        DISTINCT(mpp.entry),
+                        mpa.average_price
+                    FROM {}.mod_auctionator_market_price mpp
+                    LEFT JOIN (
+                        SELECT
+                            max(scan_datetime) AS scan,
+                            entry
+                        FROM {}.mod_auctionator_market_price
+                        GROUP BY entry
+                    ) mps ON mpp.entry = mps.entry
+                    LEFT JOIN
+                        {}.mod_auctionator_market_price mpa
+                        ON mpa.entry = mpp.entry
+                        AND mpa.scan_datetime = mps.scan
                 ) mp ON it.entry = mp.entry
         WHERE
             -- filter out items from the disabled table
             dis.item IS NULL
             -- filter out items with 'depreacted' anywhere in the name
-            AND it.name NOT LIKE '%deprecated%'
+            -- AND it.name NOT LIKE '%deprecated%'
             -- filter out items that start with 'Test'
-            AND it.name NOT LIKE 'Test%'
-            AND it.name NOT LIKE 'NPC %'
-            -- filter out items where we are already at or above max_count for uniques in this class to limit dups
+            -- AND it.name NOT LIKE 'Test%'
+            -- AND it.name NOT LIKE 'NPC %'
+            -- filter out items where we are already at or above max_count
+            -- for uniques in this class to limit dups
             AND (ic.itemCount IS NULL OR ic.itemCount < aicconf.max_count)
             AND VerifiedBuild != 1
         ORDER BY RAND()
@@ -109,6 +116,8 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
         itemQuery,
         characterDbName,
         houseId,
+        characterDbName,
+        characterDbName,
         characterDbName,
         queryLimit
     );
