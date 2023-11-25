@@ -32,8 +32,6 @@ class AuctionatorCommands : public CommandScript
 
         static bool HandleCommandOptions(ChatHandler* handler, const char* args)
         {
-            gAuctionator->logInfo("Executing Auctionator!");
-
             const char* command = strtok((char*)args, " ");
 
             if(!command)
@@ -67,6 +65,8 @@ class AuctionatorCommands : public CommandScript
                 CommandAuctionsPerCycle(commandParams, handler, gAuctionator);
             } else if (commandString == "bidonown") {
                 CommandBidOnOwn(commandParams, handler, gAuctionator);
+            } else if (commandString == "bidspercycle") {
+                CommandBidsPerCycle(commandParams, handler, gAuctionator);
             } else if (commandString == "disable") {
                 CommandDisableSeller(commandParams, handler, gAuctionator);
             } else if (commandString == "enable") {
@@ -102,6 +102,8 @@ class AuctionatorCommands : public CommandScript
 Auctionator Help:
 add ...
 auctionspercycle ...
+bidonown ...
+bidspercycle ...
 disable ...
 enable ...
 expireall ...
@@ -117,6 +119,7 @@ help
             std::string statusString = "[Auctionator] Status:\n\n";
 
             statusString += " Enabled: " + std::to_string(auctionator->config->isEnabled) + "\n\n";
+            statusString += " Bid on Own: " + std::to_string(auctionator->config->bidOnOwn) + "\n";
             statusString += " CharacterGuid: " + std::to_string(auctionator->config->characterGuid) + "\n";
 
             statusString += " Horde:\n";
@@ -310,7 +313,7 @@ help
             uint32 newMultiplier = std::stoi(params[2]);
 
             AuctionatorPriceMultiplierConfig* multipliers;
-            
+
             if (type == "seller") {
                 multipliers = &auctionator->config->sellerMultipliers;
             } else if (type == "bidder") {
@@ -343,7 +346,7 @@ help
             }
 
             if (success) {
-                handler->SendSysMessage("[Auctionator] " + type + 
+                handler->SendSysMessage("[Auctionator] " + type +
                     " multiplier: " + quality + " quality multiplier set to "
                     + std::to_string(newMultiplier));
             } else {
@@ -369,6 +372,24 @@ help
                 auctionator->config->bidOnOwn = 0;
                 handler->SendSysMessage("[Auctionator] bidonown: Bid on own disabled.");
             }
+
+            return true;
+        }
+
+        static bool CommandBidsPerCycle(const char** params, ChatHandler* handler, Auctionator* auctionator)
+        {
+            if (!params[0]) {
+                handler->SendSysMessage("[Auctionator] bidspercycle: Need to specify number of items to bid on.");
+                return true;
+            }
+
+            uint32 bidsPerCycle = std::stoi(params[0]);
+
+            auctionator->config->allianceBidder.maxPerCycle = bidsPerCycle;
+            auctionator->config->hordeBidder.maxPerCycle = bidsPerCycle;
+            auctionator->config->neutralBidder.maxPerCycle = bidsPerCycle;
+
+            handler->SendSysMessage("[Auctionator] bidspercycle: Set bids per cycle to " + std::to_string(bidsPerCycle));
 
             return true;
         }
