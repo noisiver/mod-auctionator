@@ -63,6 +63,8 @@ class AuctionatorCommands : public CommandScript
                 uint32 itemId = std::stoi(param2);
                 uint32 price = std::stoi(param3);
                 AddItemForBuyout(auctionHouseId, itemId, price, gAuctionator);
+            } else if (commandString == "auctionspercycle") {
+                CommandAuctionsPerCycle(commandParams, handler, gAuctionator);
             } else if (commandString == "bidonown") {
                 CommandBidOnOwn(commandParams, handler, gAuctionator);
             } else if (commandString == "disable") {
@@ -99,6 +101,7 @@ class AuctionatorCommands : public CommandScript
             std::string helpString(R"(
 Auctionator Help:
 add ...
+auctionspercycle ...
 disable ...
 enable ...
 expireall ...
@@ -360,6 +363,21 @@ help
                 auctionator->config->bidOnOwn = 0;
                 handler->SendSysMessage("[Auctionator] bidonown: Bid on own disabled.");
             }
+
+            return true;
+        }
+
+        static bool CommandAuctionsPerCycle(const char** params, ChatHandler* handler, Auctionator* auctionator)
+        {
+            if (!params[0]) {
+                handler->SendSysMessage("[Auctionator] auctionspercycle: Need to specify a number.");
+                return true;
+            }
+
+            uint32 auctionsPerCycle = std::stoi(params[0]);
+            auctionator->config->sellerConfig.auctionsPerRun = auctionsPerCycle;
+            handler->SendSysMessage("[Auctionator] auctionspercycle: Set auctions per cycle to "
+                + std::to_string(auctionsPerCycle));
 
             return true;
         }
