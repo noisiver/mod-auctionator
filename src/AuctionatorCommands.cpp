@@ -157,6 +157,7 @@ help
             statusString += "    Legendary: " + std::to_string(auctionator->config->bidderMultipliers.legendary) + "\n";
 
             statusString += " Seller settings:\n";
+            statusString += "    Auctions per run: " + std::to_string(auctionator->config->sellerConfig.auctionsPerRun) + "\n";
             statusString += "    Query Limit: " + std::to_string(auctionator->config->sellerConfig.queryLimit) + "\n";
             statusString += "    Default Price: " + std::to_string(auctionator->config->sellerConfig.defaultPrice) + "\n";
 

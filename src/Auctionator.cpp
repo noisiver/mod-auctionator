@@ -214,6 +214,12 @@ void Auctionator::InitializeConfig(ConfigMgr* configMgr)
     config->allianceSeller.maxAuctions = configMgr->GetOption<uint32>("Auctionator.AllianceSeller.MaxAuctions", 50);
     config->neutralSeller.maxAuctions = configMgr->GetOption<uint32>("Auctionator.NeutralSeller.MaxAuctions", 50);
 
+    // Load our seller configurations
+    config->sellerConfig.auctionsPerRun = configMgr->GetOption<uint32>("Auctionator.Seller.AuctionsPerRun", 100);
+    config->sellerConfig.defaultPrice = configMgr->GetOption<uint32>("Auctionator.Seller.DefaultPrice", 10000000);
+    config->sellerConfig.queryLimit = 
+        configMgr->GetOption<uint32>("Auctionator.Seller.QueryLimit", config->sellerConfig.auctionsPerRun);
+
     // Load our bidder configurations
     config->allianceBidder.enabled = configMgr->GetOption<uint32>("Auctionator.AllianceBidder.Enabled", 0);
     config->allianceBidder.cycleMinutes = configMgr->GetOption<uint32>("Auctionator.AllianceBidder.CycleMinutes", 30);

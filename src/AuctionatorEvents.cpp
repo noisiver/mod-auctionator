@@ -180,7 +180,10 @@ void AuctionatorEvents::EventAllianceSeller()
             + " of " + std::to_string(config->allianceSeller.maxAuctions)
         );
 
-        sellerAlliance.LetsGetToIt(100, AUCTIONHOUSE_ALLIANCE);
+        sellerAlliance.LetsGetToIt(
+            config->sellerConfig.auctionsPerRun,
+            AUCTIONHOUSE_ALLIANCE
+        );
     } else {
         logInfo("Alliance count over max: " + std::to_string(auctionCountAlliance));
     }
@@ -201,7 +204,10 @@ void AuctionatorEvents::EventHordeSeller()
             + " of " + std::to_string(config->hordeSeller.maxAuctions)
         );
 
-        sellerHorde.LetsGetToIt(100, AUCTIONHOUSE_HORDE);
+        sellerHorde.LetsGetToIt(
+            config->sellerConfig.auctionsPerRun,
+            AUCTIONHOUSE_HORDE
+        );
     } else {
         logInfo("Horde count over max: " + std::to_string(auctionCountHorde));
     }
@@ -221,7 +227,11 @@ void AuctionatorEvents::EventNeutralSeller()
             + " of " + std::to_string(config->neutralSeller.maxAuctions)
         );
 
-        sellerNeutral.LetsGetToIt(100, AUCTIONHOUSE_NEUTRAL);
+        sellerNeutral.LetsGetToIt(
+            config->sellerConfig.auctionsPerRun,
+            AUCTIONHOUSE_NEUTRAL
+        );
+
     } else {
         logInfo("Neutral count over max: " + std::to_string(auctionCountNeutral));
     }

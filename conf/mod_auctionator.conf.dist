@@ -63,7 +63,17 @@ Auctionator.Seller.QueryLimit = 1000
 # Default price for items that have a BuyPrice of 0.
 # Default is 1000 gold.
 ########################################
-Auctoinator.Seller.DefaultPrice = 10000000
+Auctionator.Seller.DefaultPrice = 10000000
+
+########################################
+# Number of auctions added to the AH per run. This needs to
+# be less than the Seller.QueryLimit or you will run out of
+# items. In theory this also needs to be less thatn the number
+# of available items not in the AH though I am not really sure
+# what happens if it's not.
+# Default is 100 per house per cycle.
+########################################
+Auctionator.Seller.AuctionsPerRun = 100
 
 ########################################
 # Allows the bidder to bid on their own auctions.
