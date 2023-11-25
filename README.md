@@ -7,7 +7,8 @@ This mod is meant to keep a healthy auction house stocked on a low-pop server. I
 1. Download the code into your source code `modules/` folder
 2. Do the Compilation Things as best you can.
 3. Run the database script in `mod-auctionator/data/sql/db-world/base/2023-09-18.sql` against your `acore_world` database.
-4. If you want a fresh start clear you auction house with these SQL commands. Do this ONLY when your server is stopped. The AH is cached in memory and if you do this while your server is running then likely ... things won't go well. Run this against your character database (default of `acore_characters`).
+4. Run the database script in `modules/mod-auctionator/data/sql/db-characters/updates/2023_11_12_00_marketprice.sql` against your `acore_characters` database.
+5. If you want a fresh start clear you auction house with these SQL commands. Do this ONLY when your server is stopped. The AH is cached in memory and if you do this while your server is running then likely ... things won't go well. Run this against your character database (default of `acore_characters`).
 
 ```
 DELETE FROM `item_instance` WHERE `guid` IN (SELECT `itemguid` FROM `auctionhouse`);
@@ -15,6 +16,30 @@ DELETE FROM `auctionhouse`;
 ```
 
 ## GM commands
+
+### auctionator add <houseid> <itemid> <price>
+
+ItemID can be looked up in the database table `item_template`.
+
+Add an Iridescent Pearl to the Neutral AH for 1 gold buyout.
+
+```
+.auctionator add 7 5500 10000
+```
+
+### auctionator auctionspercycle <value>
+
+Set the number of auctions per cycle that get added to each auction house.
+This setting is shared by all houses. You should keep this number lower
+than query limit or else ... I don't know, try it and see.
+
+Also this has a direct impact on how hard each cycle hits your worldserver
+and your mysql server so if you are running on smaller hardware you
+might want to tune this and the query limit down to lower numbers.
+
+```
+.auctionator auctionspercycle 45
+```
 
 ### auctionator bidonown <value>
 
@@ -53,21 +78,23 @@ Expire all auctions for the specified house on the next tick.
 .auctionator expireall 7
 ```
 
-### auctionator multiplier <qualitytext> <multiplier>
+### auctionator multiplier <typetext> <qualitytext> <multiplier>
+
+Typetext is either `seller` or `bidder` depending on which you want to set.
 
 Set the sell and buy multiplier for a quality. Qualities are:
 
-* poor
-* normal
-* uncommon
-* rare
-* epic
-* legendary
+* `poor`
+* `normal`
+* `uncommon`
+* `rare`
+* `epic`
+* `legendary`
 
 Multiplier is a decimal value. Defaults are set in the config file.
 
 ```
-.auctionator multiplier epic 10
+.auctionator multiplier bidder epic 10
 ```
 
 ### auctionator status
@@ -89,45 +116,43 @@ Output:
  CharacterGuid: 2
  Horde:
     Seller Enabled: 1
-        Max Auctions: 15000
-        Auctions: 15023
+        Max Auctions: 20000
+        Auctions: 9319
     Bidder Enabled: 1
         Cycle Time: 2
-        Per Cycle: 5
+        Per Cycle: 20
  Alliance:
     Seller Enabled: 1
-        Max Auctions: 15000
-        Auctions: 15040
-    Bidder Enabled: 1
-        Cycle Time: 3
-        Per Cycle: 10
- Neutral:
-    Seller Enabled: 1
-        Max Auctions: 15000
-        Auctions: 15064
+        Max Auctions: 20000
+        Auctions: 8959
     Bidder Enabled: 1
         Cycle Time: 1
-        Per Cycle: 5
- Multipliers:
+        Per Cycle: 20
+ Neutral:
+    Seller Enabled: 1
+        Max Auctions: 20000
+        Auctions: 9379
+    Bidder Enabled: 1
+        Cycle Time: 3
+        Per Cycle: 30
+ Seller Multipliers:
     Poor: 1.000000
-    Normal: 2.000000
+    Normal: 1.000000
+    Uncommon: 1.500000
+    Rare: 2.000000
+    Epic: 6.000000
+    Legendary: 10.000000
+ Bidder Multipliers:
+    Poor: 1.000000
+    Normal: 1.000000
     Uncommon: 1.500000
     Rare: 2.000000
     Epic: 6.000000
     Legendary: 10.000000
  Seller settings:
+    Auctions per run: 100
     Query Limit: 1000
     Default Price: 10000000
-```
-
-### auctionator add <houseid> <itemid> <price>
-
-ItemID can be looked up in the database table `item_template`.
-
-Add an Iridescent Pearl to the Neutral AH for 1 gold buyout.
-
-```
-.auctionator add 7 5500 10000
 ```
 
 ## Current limitations

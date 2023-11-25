@@ -300,7 +300,8 @@ help
                 auctionator->logInfo("multiplier: No multiplier specified Specified!");
             }
 
-            if (!params[0] || !params[1]) {
+            if (!params[0] || !params[1] || !params[2]) {
+                handler->SendSysMessage("[Auctionator] multiplier: Invalid parameters!");
                 return true;
             }
 
@@ -314,6 +315,9 @@ help
                 multipliers = &auctionator->config->sellerMultipliers;
             } else if (type == "bidder") {
                 multipliers = &auctionator->config->bidderMultipliers;
+            } else {
+                handler->SendSysMessage("[Auctionator] multiplier: Invalid type! [seller, bidder]");
+                return true;
             }
 
             bool success = false;
@@ -342,6 +346,8 @@ help
                 handler->SendSysMessage("[Auctionator] " + type + 
                     " multiplier: " + quality + " quality multiplier set to "
                     + std::to_string(newMultiplier));
+            } else {
+                handler->SendSysMessage("[Auctionator] unable to set multiplier");
             }
 
             return true;
