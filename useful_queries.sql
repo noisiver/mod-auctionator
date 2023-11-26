@@ -1,20 +1,20 @@
 SELECT
 	it.entry
 	, it.name
-	, aic.name as classname
-	, aic2.name as subclassname
+	, aic.name AS classname
+	, aic2.name AS subclassname
 	, aiq.name
 	, it.RequiredLevel 
 	, it.BuyPrice 
 FROM
 	item_template it
-LEFT JOIN mod_auctionator_item_class aic ON it.class = aic.class AND aic.subclass IS NULL
-LEFT JOIN mod_auctionator_item_class aic2 on it.class = aic2.class AND it.subclass = aic2.subclass
-LEFT JOIN mod_auctionator_item_quality aiq ON it.Quality = aiq.quality
+LEFT JOIN auctionator_item_class aic ON it.class = aic.class AND aic.subclass IS NULL
+LEFT JOIN auctionator_item_class aic2 ON it.class = aic2.class AND it.subclass = aic2.subclass
+LEFT JOIN auctionator_item_quality aiq ON it.Quality = aiq.quality
 WHERE
 	1
 --	AND aic2.name LIKE '%container%'
-	AND it.name like '%badge %'
+	AND it.name LIKE '%turalyon%'
 --	AND it.class = 15
 --	AND it.subclass = 3
 LIMIT 1000;
@@ -30,9 +30,9 @@ SELECT
 	, ah.buyoutprice
 FROM acore_characters.auctionhouse ah
 LEFT JOIN acore_characters.item_instance ii ON ah.itemguid = ii.guid 
-LEFT JOIN acore_world.item_template it on ii.itemEntry = it.entry
+LEFT JOIN acore_world.item_template it ON ii.itemEntry = it.entry
 LEFT JOIN acore_world.auctionator_item_class aic ON it.class = aic.class AND aic.subclass IS NULL
-LEFT JOIN acore_world.auctionator_item_class aic2 on it.class = aic2.class AND it.subclass = aic2.subclass
+LEFT JOIN acore_world.auctionator_item_class aic2 ON it.class = aic2.class AND it.subclass = aic2.subclass
 LEFT JOIN acore_world.auctionator_item_quality aiq ON it.Quality = aiq.quality
 LIMIT 10000;
 
@@ -43,15 +43,15 @@ SELECT
     , it.bonding
     , it.name
     , aic.class
-    , aic.name as classname
+    , aic.name AS classname
 	, aic2.subclass
-    , aic2.name as subclassname
+    , aic2.name AS subclassname
     , aiq.name
     , it.RequiredLevel 
 FROM
     item_template it
 LEFT JOIN auctionator_item_class aic ON it.class = aic.class AND aic.subclass IS NULL
-LEFT JOIN auctionator_item_class aic2 on it.class = aic2.class AND it.subclass = aic2.subclass
+LEFT JOIN auctionator_item_class aic2 ON it.class = aic2.class AND it.subclass = aic2.subclass
 LEFT JOIN auctionator_item_quality aiq ON it.Quality = aiq.quality
 WHERE
     1
@@ -83,8 +83,11 @@ SELECT
 	it.entry
 	, it.name
 	, it.BuyPrice 
-	, it. stackable
+	, it.stackable
 	, aicconf.stack_count
+	, mp.average_price
+--    , mp.count
+--    , it.BuyPrice - mp.average_price as PriceDiff
 --	, ic.itemCount
 --	, aicconf.max_count
 --	, it.bonding 
@@ -99,58 +102,42 @@ FROM
                 it.bonding >= aicconf.bonding
                 OR it.bonding = 0
             )
-
-        -- this union based query doesn't work because it only looks at LOOT items and ignores crafted
---     LEFT JOIN (
---     		-- This union is kinda bad because it relies on a temp table
---     		-- to do the inner join. Probably need to do something better
---     		-- here.
--- 	    	SELECT itt.entry, itt.name, itt.class, itt.subclass, itt.bonding, itt.BuyPrice, itt.quality, itt.stackable FROM (
--- 			    SELECT item FROM creature_loot_template UNION
--- 			    SELECT item FROM reference_loot_template UNION
--- 			    SELECT item FROM disenchant_loot_template UNION
--- 			    SELECT item FROM fishing_loot_template UNION
--- 			    SELECT item FROM gameobject_loot_template UNION
--- 			    SELECT item FROM item_loot_template UNION
--- 			    SELECT item FROM milling_loot_template UNION
--- 			    SELECT item FROM pickpocketing_loot_template UNION
--- 			    SELECT item FROM prospecting_loot_template UNION 
--- 			    SELECT item FROM skinning_loot_template
--- 			) li
--- 			INNER JOIN acore_world.item_template itt ON li.item = itt.entry 
--- 		) it
---        ON aicconf.class = it.class
         AND aicconf.subclass = it.subclass
         AND it.bonding != 1
         AND (
             it.bonding >= aicconf.bonding
             OR it.bonding = 0
         )
-    LEFT JOIN acore_world.mod_auctionator_disabled_items dis on it.Entry = dis.item
+    LEFT JOIN acore_world.mod_auctionator_disabled_items dis ON it.Entry = dis.item
 	LEFT JOIN (
 		-- this sub query lets us get the current count of each item already in the AH
 		-- so that we can filter out any items where itemCount >= max_count and not add
 		-- anymore of them.
 		SELECT
-			count(ii.itemEntry) as itemCount
+			COUNT(ii.itemEntry) AS itemCount
 			, ii.itemEntry AS itemEntry
 		FROM
 			acore_characters.item_instance ii 
-			INNER JOIN acore_characters.auctionhouse ah ON ii.guid = ah.itemguid 
+			INNER JOIN acore_characters.auctionhouse ah ON ii.guid = ah.itemguid
 			LEFT JOIN acore_world.item_template it ON ii.itemEntry = it.entry 
 		GROUP BY ii.itemEntry, it.name
 	) ic ON ic.itemEntry = it.entry
+--	LEFT JOIN mod_auctionator_market_price mp ON mp.entry = it.entry
+--	LEFT JOIN (SELECT entry, average_price, max(scan_datetime) FROM mod_auctionator_market_price GROUP BY entry) mp ON it.entry = mp.entry
+	LEFT JOIN
+		(SELECT entry, average_price, max(scan_datetime)
+			FROM acore_characters.mod_auctionator_market_price
+			GROUP BY entry
+		) mp ON it.entry = mp.entry
 WHERE
     -- filter out items from the disabled table
     dis.item IS NULL
-    -- filter out items with 'depreacted' anywhere in the name
-    AND it.name NOT LIKE '%deprecated%'
-    -- filter out items that start with 'Test'
-    AND it.name NOT LIKE 'Test%'
-    AND it.name NOT LIKE 'NPC %'
-    -- filter out items where we are already at or above max_count for uniques in this class to limit dups
+    AND VerifiedBuild != 1
+    AND name NOT LIKE "NPC%"
+   -- filter out items where we are already at or above max_count for uniques in this class to limit dups
     AND (ic.itemCount IS NULL OR ic.itemCount < aicconf.max_count)
 ORDER BY RAND()
+LIMIT 5000
 ;
 
 -- attempt to filter out things in the AH already but this didn't let us filter based on max_count like the subquery did
@@ -274,3 +261,6 @@ FROM
 	INNER JOIN acore_world.item_template it ON ii.itemEntry = it.entry 
 ;
 
+-- try to select the most up to date market price for an item
+SELECT entry, average_price, max(scan_datetime) FROM mod_auctionator_market_price GROUP BY entry
+;

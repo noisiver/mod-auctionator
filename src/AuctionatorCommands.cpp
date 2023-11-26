@@ -32,8 +32,6 @@ class AuctionatorCommands : public CommandScript
 
         static bool HandleCommandOptions(ChatHandler* handler, const char* args)
         {
-            gAuctionator->logInfo("Executing Auctionator!");
-
             const char* command = strtok((char*)args, " ");
 
             if(!command)
@@ -63,8 +61,12 @@ class AuctionatorCommands : public CommandScript
                 uint32 itemId = std::stoi(param2);
                 uint32 price = std::stoi(param3);
                 AddItemForBuyout(auctionHouseId, itemId, price, gAuctionator);
+            } else if (commandString == "auctionspercycle") {
+                CommandAuctionsPerCycle(commandParams, handler, gAuctionator);
             } else if (commandString == "bidonown") {
                 CommandBidOnOwn(commandParams, handler, gAuctionator);
+            } else if (commandString == "bidspercycle") {
+                CommandBidsPerCycle(commandParams, handler, gAuctionator);
             } else if (commandString == "disable") {
                 CommandDisableSeller(commandParams, handler, gAuctionator);
             } else if (commandString == "enable") {
@@ -99,6 +101,9 @@ class AuctionatorCommands : public CommandScript
             std::string helpString(R"(
 Auctionator Help:
 add ...
+auctionspercycle ...
+bidonown ...
+bidspercycle ...
 disable ...
 enable ...
 expireall ...
@@ -114,6 +119,7 @@ help
             std::string statusString = "[Auctionator] Status:\n\n";
 
             statusString += " Enabled: " + std::to_string(auctionator->config->isEnabled) + "\n\n";
+            statusString += " Bid on Own: " + std::to_string(auctionator->config->bidOnOwn) + "\n";
             statusString += " CharacterGuid: " + std::to_string(auctionator->config->characterGuid) + "\n";
 
             statusString += " Horde:\n";
@@ -140,15 +146,24 @@ help
             statusString += "        Cycle Time: " + std::to_string(auctionator->config->neutralBidder.cycleMinutes) + "\n";
             statusString += "        Per Cycle: " + std::to_string(auctionator->config->neutralBidder.maxPerCycle) + "\n";
 
-            statusString += " Multipliers:\n";
-            statusString += "    Poor: " + std::to_string(auctionator->config->multipliers.poor) + "\n";
-            statusString += "    Normal: " + std::to_string(auctionator->config->multipliers.normal) + "\n";
-            statusString += "    Uncommon: " + std::to_string(auctionator->config->multipliers.uncommon) + "\n";
-            statusString += "    Rare: " + std::to_string(auctionator->config->multipliers.rare) + "\n";
-            statusString += "    Epic: " + std::to_string(auctionator->config->multipliers.epic) + "\n";
-            statusString += "    Legendary: " + std::to_string(auctionator->config->multipliers.legendary) + "\n";
+            statusString += " Seller Multipliers:\n";
+            statusString += "    Poor: " + std::to_string(auctionator->config->sellerMultipliers.poor) + "\n";
+            statusString += "    Normal: " + std::to_string(auctionator->config->sellerMultipliers.normal) + "\n";
+            statusString += "    Uncommon: " + std::to_string(auctionator->config->sellerMultipliers.uncommon) + "\n";
+            statusString += "    Rare: " + std::to_string(auctionator->config->sellerMultipliers.rare) + "\n";
+            statusString += "    Epic: " + std::to_string(auctionator->config->sellerMultipliers.epic) + "\n";
+            statusString += "    Legendary: " + std::to_string(auctionator->config->sellerMultipliers.legendary) + "\n";
+
+            statusString += " Bidder Multipliers:\n";
+            statusString += "    Poor: " + std::to_string(auctionator->config->bidderMultipliers.poor) + "\n";
+            statusString += "    Normal: " + std::to_string(auctionator->config->bidderMultipliers.normal) + "\n";
+            statusString += "    Uncommon: " + std::to_string(auctionator->config->bidderMultipliers.uncommon) + "\n";
+            statusString += "    Rare: " + std::to_string(auctionator->config->bidderMultipliers.rare) + "\n";
+            statusString += "    Epic: " + std::to_string(auctionator->config->bidderMultipliers.epic) + "\n";
+            statusString += "    Legendary: " + std::to_string(auctionator->config->bidderMultipliers.legendary) + "\n";
 
             statusString += " Seller settings:\n";
+            statusString += "    Auctions per run: " + std::to_string(auctionator->config->sellerConfig.auctionsPerRun) + "\n";
             statusString += "    Query Limit: " + std::to_string(auctionator->config->sellerConfig.queryLimit) + "\n";
             statusString += "    Default Price: " + std::to_string(auctionator->config->sellerConfig.defaultPrice) + "\n";
 
@@ -273,43 +288,69 @@ help
 
         static bool CommandSetMultiplier(const char** params, ChatHandler* handler, Auctionator* auctionator)
         {
-            if(!params[0]) {
+            if (!params[0]) {
+                handler->SendSysMessage("[Auctionator] multiplier: No type specified! [seller, bidder]");
+                auctionator->logInfo("multiplier: No type specified");
+            }
+
+            if (!params[1]) {
                 handler->SendSysMessage("[Auctionator] multiplier: No quality specified! [poor, normal, uncommon, rare, epic, legendary]");
                 auctionator->logInfo("multiplier: No quality specified");
             }
 
-            if(!params[1]) {
+            if (!params[2]) {
                 handler->SendSysMessage("[Auctionator] multiplier: No multiplier specified!");
                 auctionator->logInfo("multiplier: No multiplier specified Specified!");
             }
 
-            if (!params[0] || !params[1]) {
+            if (!params[0] || !params[1] || !params[2]) {
+                handler->SendSysMessage("[Auctionator] multiplier: Invalid parameters!");
                 return true;
             }
 
-            std::string quality(params[0]);
-            uint32 newMultiplier = std::stoi(params[1]);
+            std::string type(params[0]);
+            std::string quality(params[1]);
+            uint32 newMultiplier = std::stoi(params[2]);
 
-            AuctionatorPriceMultiplierConfig* multipliers = &auctionator->config->multipliers;
+            AuctionatorPriceMultiplierConfig* multipliers;
 
-            if(quality == "poor") {
+            if (type == "seller") {
+                multipliers = &auctionator->config->sellerMultipliers;
+            } else if (type == "bidder") {
+                multipliers = &auctionator->config->bidderMultipliers;
+            } else {
+                handler->SendSysMessage("[Auctionator] multiplier: Invalid type! [seller, bidder]");
+                return true;
+            }
+
+            bool success = false;
+
+            if (quality == "poor") {
                 multipliers->poor = newMultiplier;
-                handler->SendSysMessage("[Auctionator] multiplier: Poor quality multiplier set to " + std::to_string(newMultiplier));
+                success = true;
             } else if (quality == "normal") {
                 multipliers->normal = newMultiplier;
-                handler->SendSysMessage("[Auctionator] multiplier: Normal quality multiplier set to " + std::to_string(newMultiplier));
+                success = true;
             } else if (quality == "uncommon") {
                 multipliers->uncommon = newMultiplier;
-                handler->SendSysMessage("[Auctionator] multiplier: Uncommon quality multiplier set to " + std::to_string(newMultiplier));
+                success = true;
             } else if (quality == "rare") {
                 multipliers->rare = newMultiplier;
-                handler->SendSysMessage("[Auctionator] multiplier: Rare quality multiplier set to " + std::to_string(newMultiplier));
+                success = true;
             } else if (quality == "epic") {
                 multipliers->epic = newMultiplier;
-                handler->SendSysMessage("[Auctionator] multiplier: Epic quality multiplier set to " + std::to_string(newMultiplier));
+                success = true;
             } else if (quality == "legendary") {
                 multipliers->legendary = newMultiplier;
-                handler->SendSysMessage("[Auctionator] multiplier: Legendary quality multiplier set to " + std::to_string(newMultiplier));
+                success = true;
+            }
+
+            if (success) {
+                handler->SendSysMessage("[Auctionator] " + type +
+                    " multiplier: " + quality + " quality multiplier set to "
+                    + std::to_string(newMultiplier));
+            } else {
+                handler->SendSysMessage("[Auctionator] unable to set multiplier");
             }
 
             return true;
@@ -331,6 +372,39 @@ help
                 auctionator->config->bidOnOwn = 0;
                 handler->SendSysMessage("[Auctionator] bidonown: Bid on own disabled.");
             }
+
+            return true;
+        }
+
+        static bool CommandBidsPerCycle(const char** params, ChatHandler* handler, Auctionator* auctionator)
+        {
+            if (!params[0]) {
+                handler->SendSysMessage("[Auctionator] bidspercycle: Need to specify number of items to bid on.");
+                return true;
+            }
+
+            uint32 bidsPerCycle = std::stoi(params[0]);
+
+            auctionator->config->allianceBidder.maxPerCycle = bidsPerCycle;
+            auctionator->config->hordeBidder.maxPerCycle = bidsPerCycle;
+            auctionator->config->neutralBidder.maxPerCycle = bidsPerCycle;
+
+            handler->SendSysMessage("[Auctionator] bidspercycle: Set bids per cycle to " + std::to_string(bidsPerCycle));
+
+            return true;
+        }
+
+        static bool CommandAuctionsPerCycle(const char** params, ChatHandler* handler, Auctionator* auctionator)
+        {
+            if (!params[0]) {
+                handler->SendSysMessage("[Auctionator] auctionspercycle: Need to specify a number.");
+                return true;
+            }
+
+            uint32 auctionsPerCycle = std::stoi(params[0]);
+            auctionator->config->sellerConfig.auctionsPerRun = auctionsPerCycle;
+            handler->SendSysMessage("[Auctionator] auctionspercycle: Set auctions per cycle to "
+                + std::to_string(auctionsPerCycle));
 
             return true;
         }

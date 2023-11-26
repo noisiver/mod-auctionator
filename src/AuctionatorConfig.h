@@ -35,6 +35,7 @@ struct AuctionatorSellerConfig
     public:
         uint32 queryLimit = 1000;
         uint32 defaultPrice = 10000000;
+        uint32 auctionsPerRun = 100;
 };
 
 class AuctionatorConfig
@@ -56,7 +57,8 @@ class AuctionatorConfig
         AuctionatorBidderConfig hordeBidder;
         AuctionatorBidderConfig neutralBidder;
 
-        AuctionatorPriceMultiplierConfig multipliers;
+        AuctionatorPriceMultiplierConfig sellerMultipliers;
+        AuctionatorPriceMultiplierConfig bidderMultipliers;
 
         AuctionatorSellerConfig sellerConfig;
 

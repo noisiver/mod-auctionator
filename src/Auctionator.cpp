@@ -12,6 +12,7 @@
 #include "AuctionatorSeller.h"
 #include "AuctionatorBidder.h"
 #include "AuctionatorEvents.h"
+#include "AuctionatorStructs.h"
 #include "EventMap.h"
 #include <vector>
 
@@ -22,9 +23,16 @@ Auctionator::Auctionator()
     Initialize();
 
     logInfo("Event init");
+
+    AuctionatorHouses* houses = new AuctionatorHouses();
+    houses->HordeAh = HordeAh;
+    houses->AllianceAh = AllianceAh;
+    houses->NeutralAh = NeutralAh;
+
     ObjectGuid buyerGuid = ObjectGuid::Create<HighGuid::Player>(config->characterGuid);
     events = AuctionatorEvents(config);
     events.SetPlayerGuid(buyerGuid);
+    events.SetHouses(houses);
 };
 
 Auctionator::~Auctionator()
@@ -206,6 +214,12 @@ void Auctionator::InitializeConfig(ConfigMgr* configMgr)
     config->allianceSeller.maxAuctions = configMgr->GetOption<uint32>("Auctionator.AllianceSeller.MaxAuctions", 50);
     config->neutralSeller.maxAuctions = configMgr->GetOption<uint32>("Auctionator.NeutralSeller.MaxAuctions", 50);
 
+    // Load our seller configurations
+    config->sellerConfig.auctionsPerRun = configMgr->GetOption<uint32>("Auctionator.Seller.AuctionsPerRun", 100);
+    config->sellerConfig.defaultPrice = configMgr->GetOption<uint32>("Auctionator.Seller.DefaultPrice", 10000000);
+    config->sellerConfig.queryLimit = 
+        configMgr->GetOption<uint32>("Auctionator.Seller.QueryLimit", config->sellerConfig.auctionsPerRun);
+
     // Load our bidder configurations
     config->allianceBidder.enabled = configMgr->GetOption<uint32>("Auctionator.AllianceBidder.Enabled", 0);
     config->allianceBidder.cycleMinutes = configMgr->GetOption<uint32>("Auctionator.AllianceBidder.CycleMinutes", 30);
@@ -221,19 +235,33 @@ void Auctionator::InitializeConfig(ConfigMgr* configMgr)
 
     config->bidOnOwn = configMgr->GetOption<uint32>("Auctionator.Bidder.BidOnOwn", 0);
 
-    // load out multipliers for buy/sell prices
-    config->multipliers.poor
-        = configMgr->GetOption<float>("Auctionator.Multipliers.Poor", 1.0f);
-    config->multipliers.normal
-        = configMgr->GetOption<float>("Auctionator.Multipliers.Normal", 1.0f);
-    config->multipliers.uncommon
-        = configMgr->GetOption<float>("Auctionator.Multipliers.Uncommon", 1.5f);
-    config->multipliers.rare
-        = configMgr->GetOption<float>("Auctionator.Multipliers.Rare", 2.0f);
-    config->multipliers.epic
-        = configMgr->GetOption<float>("Auctionator.Multipliers.Epic", 6.0f);
-    config->multipliers.legendary
-        = configMgr->GetOption<float>("Auctionator.Multipliers.Legendary", 10.0f);
+    // load out multipliers for seller prices
+    config->sellerMultipliers.poor
+        = configMgr->GetOption<float>("Auctionator.Multipliers.Seller.Poor", 1.0f);
+    config->sellerMultipliers.normal
+        = configMgr->GetOption<float>("Auctionator.Multipliers.Seller.Normal", 1.0f);
+    config->sellerMultipliers.uncommon
+        = configMgr->GetOption<float>("Auctionator.Multipliers.Seller.Uncommon", 1.5f);
+    config->sellerMultipliers.rare
+        = configMgr->GetOption<float>("Auctionator.Multipliers.Seller.Rare", 2.0f);
+    config->sellerMultipliers.epic
+        = configMgr->GetOption<float>("Auctionator.Multipliers.Seller.Epic", 6.0f);
+    config->sellerMultipliers.legendary
+        = configMgr->GetOption<float>("Auctionator.Multipliers.Seller.Legendary", 10.0f);
+
+    // load out multipliers for bidder prices
+    config->bidderMultipliers.poor
+        = configMgr->GetOption<float>("Auctionator.Multipliers.Bidder.Poor", 1.0f);
+    config->bidderMultipliers.normal
+        = configMgr->GetOption<float>("Auctionator.Multipliers.Bidder.Normal", 1.0f);
+    config->bidderMultipliers.uncommon
+        = configMgr->GetOption<float>("Auctionator.Multipliers.Bidder.Uncommon", 1.5f);
+    config->bidderMultipliers.rare
+        = configMgr->GetOption<float>("Auctionator.Multipliers.Bidder.Rare", 2.0f);
+    config->bidderMultipliers.epic
+        = configMgr->GetOption<float>("Auctionator.Multipliers.Bidder.Epic", 6.0f);
+    config->bidderMultipliers.legendary
+        = configMgr->GetOption<float>("Auctionator.Multipliers.Bidder.Legendary", 10.0f);
 
     logInfo("Auctionator config initialized");
 }
@@ -249,7 +277,7 @@ void Auctionator::Update()
     logInfo("Alliance count: " + std::to_string(AllianceAh->Getcount()));
     logInfo("Horde count: " + std::to_string(HordeAh->Getcount()));
 
-
+/*
     if (config->allianceSeller.enabled) {
         AuctionatorSeller sellerAlliance =
             AuctionatorSeller(gAuctionator, static_cast<uint32>(AUCTIONHOUSE_ALLIANCE));
@@ -312,6 +340,7 @@ void Auctionator::Update()
     } else {
         logInfo("Neutral Seller Disabled");
     }
+*/
 
     logInfo("UpdatingEvents");
     events.Update(1);
@@ -373,17 +402,17 @@ float Auctionator::GetQualityMultiplier(AuctionatorPriceMultiplierConfig config,
 {
     switch(quality) {
         case ITEM_QUALITY_POOR:
-            return 1;
+            return config.poor;
         case ITEM_QUALITY_NORMAL:
-            return 1;
+            return config.normal;
         case ITEM_QUALITY_UNCOMMON:
-            return 1.5;
+            return config.uncommon;
         case ITEM_QUALITY_RARE:
-            return 2;
+            return config.rare;
         case ITEM_QUALITY_EPIC:
-            return 6;
+            return config.epic;
         case ITEM_QUALITY_LEGENDARY:
-            return 10;
+            return config.legendary;
         default:
             return 1;
     }
