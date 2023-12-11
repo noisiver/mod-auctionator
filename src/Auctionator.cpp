@@ -200,6 +200,7 @@ void Auctionator::InitializeConfig(ConfigMgr* configMgr)
 
     config->characterId = configMgr->GetOption<uint32>("Auctionator.CharacterId", 0);
     config->characterGuid = configMgr->GetOption<uint32>("Auctionator.CharacterGuid", 0);
+    config->maxItemLevel = configMgr->GetOption<uint32>("Auctionator.MaxItemLevel", 0);
     logInfo("CharacterIds: "
         + std::to_string(config->characterId)
         + "::"

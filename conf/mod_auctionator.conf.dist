@@ -35,6 +35,8 @@ Auctionator.HordeSeller.MaxAuctions = 5000
 Auctionator.NeutralSeller.Enabled = 0
 Auctionator.NeutralSeller.MaxAuctions = 5000
 
+Auctionator.MaxItemLevel = 0
+
 ########################################
 # Bidder/Buyer configuration
 ########################################

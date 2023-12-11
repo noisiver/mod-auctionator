@@ -48,6 +48,7 @@ class AuctionatorConfig
         uint32 characterId = 0;
         uint32 characterGuid = 0;
         uint32 auctionHouseId = 7;
+        uint32 maxItemLevel = 0;
 
         AuctionatorHouseConfig hordeSeller;
         AuctionatorHouseConfig allianceSeller;

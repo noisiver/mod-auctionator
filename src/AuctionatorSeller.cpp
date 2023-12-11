@@ -49,6 +49,7 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
             , it.stackable
             , it.quality
             , mp.average_price
+            , it.ItemLevel
         FROM
             mod_auctionator_itemclass_config aicconf
             LEFT JOIN item_template it ON
@@ -153,6 +154,13 @@ void AuctionatorSeller::LetsGetToIt(uint32 maxCount, uint32 houseId)
 
         if (price == 0) {
             price = 10000000 * qualityMultiplier;
+        }
+
+        uint32 itemLevel = fields[6].Get<uint32>();
+        uint32 maxItemLevel = nator->config->maxItemLevel;
+        if (maxItemLevel > 0 && itemLevel > maxItemLevel)
+        {
+            continue;
         }
 
         AuctionatorItem newItem = AuctionatorItem();
